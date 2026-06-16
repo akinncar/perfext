@@ -1,0 +1,58 @@
+name: Package download zip
+
+# Rebuilds the extension and refreshes the zip served by the landing page's
+# "Download latest" button (apps/landing-page/public/perfext-extension.zip) on
+# every push to the default branch, then commits it back if it changed.
+#
+# The auto-commit does NOT re-trigger this workflow:
+#   1. It is pushed with the default GITHUB_TOKEN, and GitHub does not start new
+#      workflow runs from GITHUB_TOKEN-authored pushes (recursion guard).
+#   2. Its message carries [skip ci] as a documented backstop.
+# A `git diff` guard means we only commit when the zip actually changed, so
+# pushes that don't affect the build produce no commit.
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: package-download
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    # Backstop in case someone strips [skip ci] from the auto-commit message.
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild the download zip
+        run: pnpm package:extension
+
+      - name: Commit the refreshed zip if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- apps/landing-page/public/perfext-extension.zip; then
+            echo "Download zip unchanged — nothing to commit."
+          else
+            git add apps/landing-page/public/perfext-extension.zip
+            git commit -m "chore: refresh packaged extension for download [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
