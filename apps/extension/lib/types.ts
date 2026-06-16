@@ -19,10 +19,21 @@ export const DEFAULT_SETTINGS: Settings = {
   debounceMs: 5000,
 };
 
-export const MODELS: Record<Provider, { label: string; models: string[] }> = {
+export interface ProviderInfo {
+  label: string;
+  models: string[];
+  /** Where the user creates an API key for this provider. */
+  keyUrl: string;
+  /** Placeholder showing the shape of this provider's keys. */
+  keyPlaceholder: string;
+}
+
+export const MODELS: Record<Provider, ProviderInfo> = {
   openai: {
     label: "OpenAI",
     models: ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"],
+    keyUrl: "https://platform.openai.com/api-keys",
+    keyPlaceholder: "sk-…",
   },
   anthropic: {
     label: "Anthropic",
@@ -31,6 +42,8 @@ export const MODELS: Record<Provider, { label: string; models: string[] }> = {
       "claude-3-5-sonnet-latest",
       "claude-sonnet-4-5",
     ],
+    keyUrl: "https://console.anthropic.com/settings/keys",
+    keyPlaceholder: "sk-ant-…",
   },
 };
 

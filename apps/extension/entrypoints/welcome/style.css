@@ -1,0 +1,59 @@
+/* First-run welcome page layout. Shared field/button styles live in
+   ../../lib/settings-form.css (imported by SettingsForm). */
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.welcome {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.welcome-header {
+  margin-bottom: 24px;
+}
+
+.welcome-header .brand {
+  font-size: 18px;
+}
+
+.card {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.card h1 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.lead {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.steps {
+  margin: 0 0 24px;
+  padding-left: 20px;
+}
+
+.steps li {
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.steps strong {
+  color: var(--text);
+}

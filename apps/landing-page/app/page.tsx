@@ -1,6 +1,21 @@
 import { CHROME_STORE_URL, LATEST_RELEASE_URL } from "@/lib/links";
 import { ChromeIcon, DownloadIcon } from "@/components/Icons";
 
+const steps = [
+  {
+    title: "Install the extension",
+    body: "Add Perfext to Chrome. It opens a quick setup page the first time so you're never left guessing what to do next.",
+  },
+  {
+    title: "Paste your API key",
+    body: "Pick OpenAI or Anthropic and paste a key from your provider. Perfext tests it on the spot, so you know it works before you start.",
+  },
+  {
+    title: "Start typing anywhere",
+    body: "Open any text field and write. A few seconds after you pause, suggestions appear inline — hover to Accept or Dismiss.",
+  },
+];
+
 const features = [
   {
     title: "Writes alongside you",
@@ -97,6 +112,29 @@ export default function Home() {
               </span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Get started */}
+      <section className="mx-auto max-w-5xl px-6 pb-24">
+        <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight">
+          Set up in three steps
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {steps.map((s, i) => (
+            <div
+              key={s.title}
+              className="rounded-xl border border-border bg-surface p-6"
+            >
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-sm font-medium text-white">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-base font-medium text-white">
+                {s.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{s.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
