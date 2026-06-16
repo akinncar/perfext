@@ -139,15 +139,16 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-5xl px-6 pb-24">
-        <div className="grid gap-6 sm:grid-cols-3">
+      <section className="mx-auto max-w-3xl px-6 pb-24">
+        <div className="flex flex-col divide-y divide-border">
           {features.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-xl border border-border bg-surface p-6"
-            >
-              <h3 className="text-base font-medium text-white">{f.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">{f.body}</p>
+            <div key={f.title} className="py-10 first:pt-0 last:pb-0">
+              <h3 className="text-2xl font-semibold tracking-tight text-white">
+                {f.title}
+              </h3>
+              <p className="mt-3 max-w-xl text-base leading-7 text-muted">
+                {f.body}
+              </p>
             </div>
           ))}
         </div>
