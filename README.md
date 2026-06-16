@@ -1,4 +1,4 @@
-# Perfext — make perfect texts
+# Perfext — Make Perfect Texts
 
 Perfext is a browser extension that uses AI to improve your writing skills,
 suggesting improvements as you type, powered by **your own** AI model and API
