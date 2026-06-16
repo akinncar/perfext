@@ -42,8 +42,8 @@ export default function Home() {
           Make Perfect Texts.
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-balance text-lg text-muted">
-          A browser extension that quietly improves your writing as you type —
-          everywhere you type. Powered by the AI model of your choice.
+          A browser extension that improves your writing as you type.<br />
+          Your only AI writing assistant.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
