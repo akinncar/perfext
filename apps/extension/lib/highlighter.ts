@@ -116,7 +116,7 @@ export class FieldController {
     this.mirror.style.width = `${this.el.offsetWidth}px`;
     this.mirror.style.transform = `translate(${-this.el.scrollLeft}px, ${-this.el.scrollTop}px)`;
 
-    // Pin the spinner to the field's bottom-right corner, Grammarly-style.
+    // Pin the spinner to the field's bottom-right corner.
     this.spinner.style.left = `${rect.right + scrollX - 22}px`;
     this.spinner.style.top = `${rect.bottom + scrollY - 22}px`;
 

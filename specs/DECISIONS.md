@@ -43,7 +43,7 @@ can evaluate," and `back-end.md` was left empty for me to decide.
   debounce slider (2–15s, default 5s). Kept deliberately minimal per the spec.
 - **Highlighting technique:** a transparent "mirror" overlay positioned over
   the field, matching its font/padding/scroll, with colored wavy underlines on
-  the problem spans (the standard Grammarly-style approach). Hovering a span
+  the problem spans (the standard inline-highlighting approach). Hovering a span
   opens a shared popover with the suggestion + Accept / Dismiss.
 - **Scope of fields handled in MVP:** `<textarea>` and text-like `<input>`
   (text/search/email/url). **Q:** `contenteditable` editors (Gmail body,

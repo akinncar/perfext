@@ -2,7 +2,7 @@
   "name": "perfext",
   "version": "0.1.0",
   "private": true,
-  "description": "Perfext — a tool to make perfect texts. Grammarly-style browser extension + landing page.",
+  "description": "Perfext — a tool to make perfect texts. AI-powered writing browser extension + landing page.",
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=18"

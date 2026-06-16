@@ -6,8 +6,8 @@ interface PopoverHandlers {
 }
 
 /**
- * A single shared popover reused for every highlight on the page (Grammarly
- * style). It positions itself next to the hovered mark and stays open while
+ * A single shared popover reused for every highlight on the page. It
+ * positions itself next to the hovered mark and stays open while
  * the pointer is over either the mark or the popover.
  */
 class PopoverManager {

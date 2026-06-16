@@ -1,6 +1,6 @@
 import { Issue, Settings, Severity } from "./types";
 
-const SYSTEM_PROMPT = `You are Perfext, a writing assistant similar to Grammarly.
+const SYSTEM_PROMPT = `You are Perfext, an AI writing assistant.
 You will be given a piece of text a user is typing. Find concrete writing problems.
 
 Classify each problem with a severity:

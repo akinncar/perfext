@@ -1,8 +1,8 @@
 # Perfext — make perfect texts
 
-Perfext is a Grammarly-style browser extension that suggests improvements to
-your writing as you type, powered by **your own** AI model and API key, plus a
-landing page to install it.
+Perfext is a browser extension that uses AI to improve your writing skills,
+suggesting improvements as you type, powered by **your own** AI model and API
+key, plus a landing page to install it.
 
 ![Perfext highlighting a misspelling and an awkward phrase, with an Accept/Dismiss suggestion popover](docs/demo.png)
 

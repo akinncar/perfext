@@ -12,7 +12,7 @@ export default defineConfig({
   manifest: {
     name: "Perfext — make perfect texts",
     description:
-      "Grammarly-style writing suggestions as you type, powered by your own AI model and key.",
+      "AI-powered writing suggestions as you type, powered by your own AI model and key.",
     permissions: ["storage", "activeTab"],
     // The user's AI provider endpoints the background worker is allowed to call.
     host_permissions: [

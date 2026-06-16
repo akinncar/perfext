@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Working notes for AI agents (and humans) contributing to **Perfext** — a
-Grammarly-style writing extension plus its landing page.
+Working notes for AI agents (and humans) contributing to **Perfext** — an
+AI-powered writing extension plus its landing page.
 
 ## What this repo is
 
