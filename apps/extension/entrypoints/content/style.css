@@ -2,55 +2,47 @@
    with the host page. Injected via the extension (not an inline <style>),
    so it is not blocked by strict page CSP. */
 
+/* A single fixed, click-through layer that holds every mark. Individual marks
+   are absolutely positioned within it at viewport coordinates. */
 .perfext-overlay {
-  position: absolute;
+  position: fixed;
+  inset: 0;
   margin: 0;
   pointer-events: none;
-  overflow: hidden;
   z-index: 2147483646;
   background: transparent;
 }
 
-.perfext-mirror {
-  margin: 0;
-  border: 0 solid transparent;
-  background: transparent;
-  color: transparent;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
+/* One mark element per DOMRect from rectsForRange(). The wavy underline is
+   drawn as a repeating SVG background pinned to the bottom edge; the faint
+   tint is the background-color. */
 .perfext-mark {
+  position: absolute;
   pointer-events: auto;
-  border-radius: 2px;
   cursor: help;
-  /* underline drawn with a thick bottom border so it sits under the glyphs */
-  background-position: bottom;
+  border-radius: 2px;
   background-repeat: repeat-x;
+  background-position: left bottom;
 }
 
 .perfext-red {
-  text-decoration: underline wavy #ef4444;
-  text-decoration-skip-ink: none;
   background-color: rgba(239, 68, 68, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='M0 2 Q1.5 0 3 2 T6 2' stroke='%23ef4444' fill='none' stroke-width='1'/%3E%3C/svg%3E");
 }
 
 .perfext-yellow {
-  text-decoration: underline wavy #eab308;
-  text-decoration-skip-ink: none;
   background-color: rgba(234, 179, 8, 0.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='M0 2 Q1.5 0 3 2 T6 2' stroke='%23eab308' fill='none' stroke-width='1'/%3E%3C/svg%3E");
 }
 
 .perfext-denied {
-  text-decoration: underline dotted #9ca3af;
-  text-decoration-skip-ink: none;
   background-color: rgba(156, 163, 175, 0.14);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='3'%3E%3Ccircle cx='1' cy='2' r='0.6' fill='%239ca3af'/%3E%3C/svg%3E");
 }
 
 /* ---- Analyzing spinner ---- */
 .perfext-spinner {
-  position: absolute;
+  position: fixed;
   width: 16px;
   height: 16px;
   z-index: 2147483646;

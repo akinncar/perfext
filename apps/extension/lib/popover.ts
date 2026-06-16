@@ -1,3 +1,4 @@
+import { computePosition, flip, shift, offset } from "@floating-ui/dom";
 import { Issue } from "./types";
 
 interface PopoverHandlers {
@@ -95,19 +96,22 @@ class PopoverManager {
 
     el.appendChild(actions);
 
-    // Position: prefer below the mark, flip above if it would overflow.
+    // Position with floating-ui: prefer below the mark, flip above and shift
+    // into view as needed. The anchor is a viewport-rect virtual element.
     el.style.display = "block";
-    const pop = el.getBoundingClientRect();
-    let top = anchor.bottom + 6;
-    if (top + pop.height > window.innerHeight) {
-      top = Math.max(6, anchor.top - pop.height - 6);
-    }
-    let left = anchor.left;
-    if (left + pop.width > window.innerWidth - 8) {
-      left = Math.max(8, window.innerWidth - pop.width - 8);
-    }
-    el.style.top = `${top}px`;
-    el.style.left = `${left}px`;
+    const reference = {
+      getBoundingClientRect: () => anchor,
+    };
+    computePosition(reference, el, {
+      placement: "bottom-start",
+      strategy: "fixed",
+      middleware: [offset(6), flip(), shift({ padding: 8 })],
+    }).then(({ x, y }) => {
+      // Bail if a newer show() replaced this issue while we were positioning.
+      if (this.current?.id !== issue.id) return;
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+    });
   }
 
   isShowing(issue: Issue): boolean {

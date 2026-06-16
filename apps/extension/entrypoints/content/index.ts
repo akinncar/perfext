@@ -1,4 +1,4 @@
-import { FieldController } from "@/lib/highlighter";
+import { FieldController } from "@/lib/text-surface/field-controller";
 import { loadSettings, onSettingsChanged } from "@/lib/settings";
 import { Settings, DEFAULT_SETTINGS } from "@/lib/types";
 import "./style.css";
