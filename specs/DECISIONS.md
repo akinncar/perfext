@@ -45,8 +45,11 @@ can evaluate," and `back-end.md` was left empty for me to decide.
   the field, matching its font/padding/scroll, with colored wavy underlines on
   the problem spans (the standard inline-highlighting approach). Hovering a span
   opens a shared popover with the suggestion + Accept / Dismiss.
-- **Scope of fields handled in MVP:** `<textarea>` and text-like `<input>`
-  (text/search/email/url). **Q:** `contenteditable` editors (Gmail body,
+- **Scope of fields handled in MVP:** `<textarea>` and free-text `<input>`
+  (`type=text` and untyped inputs). Inputs whose value isn't prose —
+  email, url, search, password, number, tel, etc. — are intentionally **not**
+  analyzed, since writing suggestions don't apply to them. **Q:**
+  `contenteditable` editors (Gmail body,
   X/Twitter, Notion, Google Docs) are intentionally **not** handled yet —
   reliable inline highlighting there is substantially more work. Confirm
   whether contenteditable support is a priority for v1.
