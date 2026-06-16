@@ -18,13 +18,10 @@ export default defineContentScript({
     const getSettings = () => settings;
     const controllers = new Map<Element, FieldController>();
 
-    const TEXT_INPUT_TYPES = new Set([
-      "text",
-      "search",
-      "email",
-      "url",
-      "",
-    ]);
+    // Only free-form prose fields make sense for a writing assistant. We cover
+    // <textarea> (always) and text-like <input>s, but skip inputs whose value
+    // isn't prose: email, url, search, password, number, tel, etc.
+    const TEXT_INPUT_TYPES = new Set(["text", ""]);
 
     function isTargetField(node: Node): node is HTMLTextAreaElement | HTMLInputElement {
       if (!(node instanceof HTMLElement)) return false;
