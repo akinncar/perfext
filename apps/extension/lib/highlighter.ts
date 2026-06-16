@@ -39,6 +39,7 @@ export class FieldController {
   private el: TextField;
   private overlay: HTMLDivElement;
   private mirror: HTMLDivElement;
+  private spinner: HTMLDivElement;
   private getSettings: () => Settings;
 
   private issues: Issue[] = [];
@@ -60,6 +61,14 @@ export class FieldController {
     this.mirror.className = "perfext-mirror";
     this.overlay.appendChild(this.mirror);
     document.body.appendChild(this.overlay);
+
+    // Small "analyzing" indicator anchored to the field's bottom-right corner,
+    // shown while we wait for the user to pause and while a request is running.
+    this.spinner = document.createElement("div");
+    this.spinner.className = "perfext-spinner";
+    this.spinner.style.display = "none";
+    this.spinner.title = "Perfext is checking your text…";
+    document.body.appendChild(this.spinner);
 
     this.copyStyles();
     this.reposition();
@@ -107,9 +116,23 @@ export class FieldController {
     this.mirror.style.width = `${this.el.offsetWidth}px`;
     this.mirror.style.transform = `translate(${-this.el.scrollLeft}px, ${-this.el.scrollTop}px)`;
 
+    // Pin the spinner to the field's bottom-right corner, Grammarly-style.
+    this.spinner.style.left = `${rect.right + scrollX - 22}px`;
+    this.spinner.style.top = `${rect.bottom + scrollY - 22}px`;
+
     // Hide overlay if the field is not visible.
     const hidden = rect.width === 0 || rect.height === 0;
     this.overlay.style.display = hidden ? "none" : "block";
+    if (hidden) this.spinner.style.display = "none";
+  }
+
+  private showSpinner() {
+    if (this.destroyed) return;
+    this.spinner.style.display = "block";
+  }
+
+  private hideSpinner() {
+    this.spinner.style.display = "none";
   }
 
   private scheduleAnalyze() {
@@ -117,22 +140,41 @@ export class FieldController {
     // Re-rendering immediately keeps highlights glued to text while typing.
     this.reposition();
     this.render();
-    const delay = this.getSettings().debounceMs;
-    this.debounceTimer = window.setTimeout(() => this.runAnalyze(), delay);
+
+    const settings = this.getSettings();
+    const pending =
+      settings.enabled &&
+      this.value().trim().length >= 3 &&
+      this.value() !== this.lastAnalyzed;
+    // Show the "analyzing" indicator while we wait out the debounce + fetch.
+    if (pending) this.showSpinner();
+    else this.hideSpinner();
+
+    this.debounceTimer = window.setTimeout(
+      () => this.runAnalyze(),
+      settings.debounceMs,
+    );
   }
 
   private async runAnalyze() {
     if (this.destroyed) return;
     const settings = this.getSettings();
-    if (!settings.enabled) return;
+    if (!settings.enabled) {
+      this.hideSpinner();
+      return;
+    }
 
     const text = this.value();
     if (text.trim().length < 3) {
       this.issues = [];
       this.render();
+      this.hideSpinner();
       return;
     }
-    if (text === this.lastAnalyzed) return;
+    if (text === this.lastAnalyzed) {
+      this.hideSpinner();
+      return;
+    }
 
     try {
       const res = (await chrome.runtime.sendMessage({
@@ -141,7 +183,8 @@ export class FieldController {
       } satisfies AnalyzeRequest)) as AnalyzeResponse;
 
       if (this.destroyed) return;
-      // Ignore stale responses if the user kept typing.
+      // Ignore stale responses if the user kept typing; a newer run is pending
+      // and is already showing its own spinner.
       if (this.value() !== text) return;
 
       this.lastAnalyzed = text;
@@ -154,6 +197,8 @@ export class FieldController {
       this.render();
     } catch (err) {
       console.warn("[Perfext] analyze failed", err);
+    } finally {
+      if (!this.destroyed && this.value() === text) this.hideSpinner();
     }
   }
 
@@ -257,6 +302,7 @@ export class FieldController {
     window.removeEventListener("scroll", this.onScrollOrResize, true);
     window.removeEventListener("resize", this.onScrollOrResize);
     this.overlay.remove();
+    this.spinner.remove();
   }
 }
 

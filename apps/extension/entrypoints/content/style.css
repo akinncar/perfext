@@ -48,6 +48,26 @@
   background-color: rgba(156, 163, 175, 0.14);
 }
 
+/* ---- Analyzing spinner ---- */
+.perfext-spinner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  z-index: 2147483646;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 120, 120, 0.35);
+  border-top-color: #16a34a;
+  background: transparent;
+  animation: perfext-spin 0.7s linear infinite;
+}
+
+@keyframes perfext-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---- Popover ---- */
 .perfext-popover {
   position: fixed;
