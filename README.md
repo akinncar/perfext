@@ -13,9 +13,6 @@ landing page to install it.
 Hover a highlight to see the suggestion in a popover and **Accept** or
 **Dismiss** it. Dismissed suggestions turn gray and can be restored.
 
-This is an MVP. See [`specs/DECISIONS.md`](specs/DECISIONS.md) for the choices
-made while building it and the open questions worth confirming.
-
 ## Repository layout
 
 ```
