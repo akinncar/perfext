@@ -86,9 +86,18 @@ change. To load it:
 
 ### Configure the extension
 
+On first install, Perfext opens a **welcome page** automatically with a guided
+setup: pick a provider, paste your key, and hit **Test & save** — it makes a
+cheap authenticated call to confirm the key works before saving, so a typo'd or
+out-of-credit key fails loudly up front instead of silently later.
+
+To change settings afterwards, open the toolbar **popup**:
+
 1. Click the **Perfext** icon in the toolbar to open the settings popup.
 2. Choose a **provider** (OpenAI or Anthropic) and a **model**.
 3. Paste your **API key** (stored locally in `chrome.storage`, never uploaded).
+   The popup links to each provider's key page, and shows a setup prompt while
+   no key is set.
 4. Optionally adjust the **wait before checking** slider, then **Save**.
 
 ### Try it

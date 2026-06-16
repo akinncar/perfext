@@ -36,6 +36,49 @@ export async function analyze(text: string, settings: Settings): Promise<Issue[]
   return anchorIssues(text, raw);
 }
 
+export type VerifyResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Check that the configured API key works, without spending tokens: both
+ * providers expose a cheap authenticated `GET /v1/models` endpoint. Used by the
+ * setup flow so a bad key fails loudly up front instead of silently later.
+ */
+export async function verifyKey(settings: Settings): Promise<VerifyResult> {
+  if (!settings.apiKey.trim()) {
+    return { ok: false, error: "Enter an API key first." };
+  }
+
+  try {
+    const res =
+      settings.provider === "anthropic"
+        ? await fetch("https://api.anthropic.com/v1/models", {
+            headers: {
+              "x-api-key": settings.apiKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true",
+            },
+          })
+        : await fetch("https://api.openai.com/v1/models", {
+            headers: { Authorization: `Bearer ${settings.apiKey}` },
+          });
+
+    if (res.ok) return { ok: true };
+    return { ok: false, error: describeAuthError(res.status) };
+  } catch {
+    return { ok: false, error: "Couldn't reach the provider. Check your connection." };
+  }
+}
+
+function describeAuthError(status: number): string {
+  if (status === 401 || status === 403) {
+    return "Key rejected — double-check you copied it correctly.";
+  }
+  if (status === 429) {
+    return "Rate limited, or this key has no credit available.";
+  }
+  return `Provider returned an error (${status}).`;
+}
+
 async function callOpenAI(text: string, settings: Settings): Promise<RawIssue[]> {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

@@ -3,7 +3,15 @@ import { loadSettings } from "@/lib/settings";
 import { AnalyzeRequest, AnalyzeResponse } from "@/lib/types";
 
 export default defineBackground(() => {
-  // Open the settings popup is handled by the action; here we only handle
+  // On fresh install, open the welcome page so new users land directly on the
+  // setup flow instead of having to discover the toolbar popup themselves.
+  chrome.runtime.onInstalled.addListener((details) => {
+    if (details.reason === "install") {
+      chrome.tabs.create({ url: chrome.runtime.getURL("/welcome.html") });
+    }
+  });
+
+  // Opening the settings popup is handled by the action; here we only handle
   // analysis requests coming from content scripts.
   chrome.runtime.onMessage.addListener(
     (message: AnalyzeRequest, _sender, sendResponse) => {

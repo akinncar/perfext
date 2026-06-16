@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadSettings, saveSettings } from "@/lib/settings";
-import {
-  DEFAULT_SETTINGS,
-  MODELS,
-  Provider,
-  Settings,
-} from "@/lib/types";
+import { SettingsForm } from "@/lib/SettingsForm";
+import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
 
 export function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -19,19 +15,8 @@ export function App() {
     });
   }, []);
 
-  function update<K extends keyof Settings>(key: K, value: Settings[K]) {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-    setStatus("");
-  }
-
-  function onProviderChange(provider: Provider) {
-    // Keep the model valid for the newly-selected provider.
-    const models = MODELS[provider].models;
-    setSettings((prev) => ({
-      ...prev,
-      provider,
-      model: models.includes(prev.model) ? prev.model : models[0],
-    }));
+  function update(next: Settings) {
+    setSettings(next);
     setStatus("");
   }
 
@@ -41,7 +26,13 @@ export function App() {
     setTimeout(() => setStatus(""), 1500);
   }
 
+  function openSetup() {
+    chrome.tabs.create({ url: chrome.runtime.getURL("/welcome.html") });
+  }
+
   if (!loaded) return <div className="app">Loading…</div>;
+
+  const needsKey = !settings.apiKey.trim();
 
   return (
     <div className="app">
@@ -54,7 +45,7 @@ export function App() {
           <input
             type="checkbox"
             checked={settings.enabled}
-            onChange={(e) => update("enabled", e.target.checked)}
+            onChange={(e) => update({ ...settings, enabled: e.target.checked })}
           />
           <span style={{ fontSize: 12 }}>
             {settings.enabled ? "On" : "Off"}
@@ -62,63 +53,16 @@ export function App() {
         </label>
       </div>
 
-      <div className="field">
-        <label>Provider</label>
-        <select
-          value={settings.provider}
-          onChange={(e) => onProviderChange(e.target.value as Provider)}
-        >
-          {(Object.keys(MODELS) as Provider[]).map((p) => (
-            <option key={p} value={p}>
-              {MODELS[p].label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {needsKey && (
+        <div className="callout">
+          <p>Add an API key to start getting suggestions.</p>
+          <button className="callout-action" onClick={openSetup}>
+            Open setup guide
+          </button>
+        </div>
+      )}
 
-      <div className="field">
-        <label>Model</label>
-        <select
-          value={settings.model}
-          onChange={(e) => update("model", e.target.value)}
-        >
-          {MODELS[settings.provider].models.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="field">
-        <label>API key</label>
-        <input
-          type="password"
-          placeholder={
-            settings.provider === "anthropic" ? "sk-ant-…" : "sk-…"
-          }
-          value={settings.apiKey}
-          onChange={(e) => update("apiKey", e.target.value)}
-          autoComplete="off"
-        />
-        <p className="hint">
-          Stored locally in your browser. Used only to call {" "}
-          {MODELS[settings.provider].label} directly — your text never passes
-          through any Perfext server.
-        </p>
-      </div>
-
-      <div className="field">
-        <label>Wait before checking ({(settings.debounceMs / 1000).toFixed(0)}s)</label>
-        <input
-          type="range"
-          min={2000}
-          max={15000}
-          step={1000}
-          value={settings.debounceMs}
-          onChange={(e) => update("debounceMs", Number(e.target.value))}
-        />
-      </div>
+      <SettingsForm settings={settings} onChange={update} />
 
       <button className="save" onClick={onSave}>
         Save
