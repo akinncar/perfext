@@ -115,12 +115,24 @@ pnpm build         # builds both apps via Turborepo
   @perfext/landing-page start` to serve it).
 - Extension output: `apps/extension/.output/chrome-mv3/`.
 
-Package the extension into a distributable zip (used for the "Download latest"
-button on the landing page):
+Package the extension into a distributable zip **and** publish it to the
+landing page's "Download latest" button in one step:
 
 ```bash
-pnpm --filter @perfext/extension zip
-# -> apps/extension/.output/*.zip
+pnpm package:extension
+# builds apps/extension/.output/*.zip and copies it to
+# apps/landing-page/public/perfext-extension.zip
+```
+
+The landing page's "Download latest" button serves that file directly
+(`/perfext-extension.zip`). After downloading, unzip it and load the unpacked
+folder via `chrome://extensions` → **Load unpacked** (the zip is unpacked for
+local installs; the Chrome Web Store accepts the zip as-is once published).
+
+To only build the zip without copying it:
+
+```bash
+pnpm --filter @perfext/extension zip   # -> apps/extension/.output/*.zip
 ```
 
 ## Useful scripts

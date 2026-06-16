@@ -58,8 +58,7 @@ export default function Home() {
           </a>
           <a
             href={LATEST_RELEASE_URL}
-            target="_blank"
-            rel="noreferrer"
+            download
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 font-medium text-white transition hover:border-neutral-500 sm:w-auto"
           >
             <DownloadIcon className="h-5 w-5" />
@@ -136,8 +135,7 @@ export default function Home() {
           </a>
           <a
             href={LATEST_RELEASE_URL}
-            target="_blank"
-            rel="noreferrer"
+            download
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 font-medium text-white transition hover:border-neutral-500 sm:w-auto"
           >
             <DownloadIcon className="h-5 w-5" />
