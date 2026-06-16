@@ -6,17 +6,14 @@ import {
 } from "../types";
 import { OverlayRenderer } from "./overlay-renderer";
 import { PositionTracker } from "./position-tracker";
-import { TextInputSource } from "./text-input-source";
 import { TextSource } from "./text-source";
-
-type TextField = HTMLTextAreaElement | HTMLInputElement;
 
 /**
  * Per active field: owns and wires together one `TextSource`, one
  * `OverlayRenderer`, one `PositionTracker`, and the analysis debounce.
  *
- * It is written only against the `TextSource` interface, so swapping in a
- * `ContentEditableSource` (Phase 1) requires no changes here.
+ * It is written only against the `TextSource` interface, so a
+ * `TextInputSource` and a `ContentEditableSource` are handled identically.
  */
 export class FieldController {
   private source: TextSource;
@@ -31,10 +28,10 @@ export class FieldController {
   private destroyed = false;
   private unsubscribe: () => void;
 
-  constructor(el: TextField, getSettings: () => Settings) {
+  constructor(source: TextSource, getSettings: () => Settings) {
     this.getSettings = getSettings;
 
-    this.source = new TextInputSource(el);
+    this.source = source;
     this.renderer = new OverlayRenderer(this.source, {
       onAccept: (i) => this.applyIssue(i),
       onDeny: (i) => this.toggleDeny(i),

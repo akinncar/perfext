@@ -1,4 +1,5 @@
 import { FieldController } from "@/lib/text-surface/field-controller";
+import { createTextSource } from "@/lib/text-surface/create-source";
 import { loadSettings, onSettingsChanged } from "@/lib/settings";
 import { Settings, DEFAULT_SETTINGS } from "@/lib/types";
 import "./style.css";
@@ -39,7 +40,7 @@ export default defineContentScript({
 
     function attach(el: HTMLTextAreaElement | HTMLInputElement) {
       if (controllers.has(el)) return;
-      controllers.set(el, new FieldController(el, getSettings));
+      controllers.set(el, new FieldController(createTextSource(el), getSettings));
     }
 
     function scan(root: ParentNode = document) {
