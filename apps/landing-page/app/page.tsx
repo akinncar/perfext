@@ -22,7 +22,11 @@ export default function Home() {
       {/* Nav */}
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <span className="inline-block h-5 w-5 rounded-md bg-white" />
+          <img
+            src="/icon.png"
+            alt="Perfext"
+            className="h-5 w-5 rounded-md ring-1 ring-white/80"
+          />
           Perfext
         </div>
         <a
