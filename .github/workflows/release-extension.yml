@@ -1,0 +1,101 @@
+name: Release extension
+
+# Publishes the extension to the Chrome Web Store on every merge to the default
+# branch — but ONLY when the version in apps/extension/package.json has been
+# bumped. Merges that don't change the version (docs, refactors, fixes that
+# aren't a release) are detected via the `extension-v<version>` git tag and skip
+# publishing. So: bump the version in the same PR you want released; leave it
+# untouched for everything else.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
+# See docs/RELEASING.md for how to obtain them.
+
+on:
+  push:
+    branches: [main, master]
+
+# Allow the workflow to push the release tag back to the repo.
+permissions:
+  contents: write
+
+concurrency:
+  group: release-extension
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # Whether publishing credentials are configured. Until the secrets are added
+    # (see docs/RELEASING.md), the workflow runs but never attempts to publish —
+    # so merging this infrastructure, or any merge before setup, is a safe no-op.
+    env:
+      HAS_CREDENTIALS: ${{ secrets.CHROME_EXTENSION_ID != '' && secrets.CHROME_REFRESH_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need tags to tell a release from a normal merge
+
+      - name: Read extension version
+        id: ver
+        run: |
+          VERSION=$(node -p "require('./apps/extension/package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=extension-v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extension version: $VERSION"
+
+      - name: Decide whether to publish
+        id: check
+        run: |
+          if [ "${HAS_CREDENTIALS}" != "true" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Chrome Web Store secrets are not configured yet — skipping publish. See docs/RELEASING.md."
+          elif git rev-parse "refs/tags/${{ steps.ver.outputs.tag }}" >/dev/null 2>&1; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Tag ${{ steps.ver.outputs.tag }} already exists — this merge is not a release. Skipping publish."
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::New version ${{ steps.ver.outputs.version }} — will publish to the Chrome Web Store."
+          fi
+
+      - name: Install pnpm
+        if: steps.check.outputs.should_release == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        if: steps.check.outputs.should_release == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.check.outputs.should_release == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & zip extension
+        if: steps.check.outputs.should_release == 'true'
+        run: pnpm --filter @perfext/extension zip
+
+      - name: Submit to Chrome Web Store
+        if: steps.check.outputs.should_release == 'true'
+        working-directory: apps/extension
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          ZIP=$(ls .output/*-chrome.zip | head -n1)
+          echo "Submitting $ZIP"
+          # Call publish-browser-extension directly (it reads the CHROME_* env
+          # vars above). Pinned for reproducible CI.
+          pnpm dlx publish-browser-extension@4 --chrome-zip "$ZIP"
+
+      - name: Tag the released version
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.ver.outputs.tag }}"
+          git push origin "${{ steps.ver.outputs.tag }}"

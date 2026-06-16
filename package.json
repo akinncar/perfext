@@ -11,6 +11,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "package:extension": "node scripts/package-extension.mjs",
+    "icons": "node scripts/generate-icons.mjs",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"
   },

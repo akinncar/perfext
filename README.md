@@ -137,6 +137,15 @@ To only build the zip without copying it:
 pnpm --filter @perfext/extension zip   # -> apps/extension/.output/*.zip
 ```
 
+## Publishing to the Chrome Web Store
+
+Merging a **version bump** in `apps/extension/package.json` to `main`
+auto-publishes the extension to the Chrome Web Store via GitHub Actions
+([`.github/workflows/release-extension.yml`](.github/workflows/release-extension.yml)).
+Merges that don't change the version are skipped, so only intentional releases
+ship. The one-time account/credential setup and the full flow are in
+**[docs/RELEASING.md](docs/RELEASING.md)**.
+
 ## Useful scripts
 
 | Command | What it does |
@@ -145,6 +154,7 @@ pnpm --filter @perfext/extension zip   # -> apps/extension/.output/*.zip
 | `pnpm build` | Build all apps |
 | `pnpm typecheck` | Type-check all apps |
 | `pnpm clean` | Remove build artifacts |
+| `pnpm icons` | Regenerate the extension icons (`apps/extension/public/icon/*.png`) |
 | `pnpm --filter @perfext/extension dev:firefox` | Run the extension for Firefox |
 
 ## Troubleshooting
