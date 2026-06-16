@@ -68,6 +68,9 @@ Scope note: highlighting supports `<textarea>` and text `<input>`;
   - `fix(landing-page): serve packaged extension so prod download works`
   - `docs: add AGENTS.md`
   - Commit to `main` (the production branch Vercel deploys).
+- **Pull requests:** the PR **title must follow Conventional Commits** (it
+  becomes the squash commit subject), and PRs are **always squash-merged** into
+  `main` — one commit per PR, no merge commits.
 - **CSS in the content script** must come from the injected stylesheet
   (`entrypoints/content/style.css`) or CSSOM `.style.x` setters — never inline
   `<style>`/`style="..."` strings, which strict page CSP blocks.
