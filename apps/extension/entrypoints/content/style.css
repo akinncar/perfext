@@ -1,0 +1,129 @@
+/* All Perfext-injected UI is namespaced under .perfext- to avoid clashing
+   with the host page. Injected via the extension (not an inline <style>),
+   so it is not blocked by strict page CSP. */
+
+.perfext-overlay {
+  position: absolute;
+  margin: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2147483646;
+  background: transparent;
+}
+
+.perfext-mirror {
+  margin: 0;
+  border: 0 solid transparent;
+  background: transparent;
+  color: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.perfext-mark {
+  pointer-events: auto;
+  border-radius: 2px;
+  cursor: help;
+  /* underline drawn with a thick bottom border so it sits under the glyphs */
+  background-position: bottom;
+  background-repeat: repeat-x;
+}
+
+.perfext-red {
+  text-decoration: underline wavy #ef4444;
+  text-decoration-skip-ink: none;
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+.perfext-yellow {
+  text-decoration: underline wavy #eab308;
+  text-decoration-skip-ink: none;
+  background-color: rgba(234, 179, 8, 0.12);
+}
+
+.perfext-denied {
+  text-decoration: underline dotted #9ca3af;
+  text-decoration-skip-ink: none;
+  background-color: rgba(156, 163, 175, 0.14);
+}
+
+/* ---- Popover ---- */
+.perfext-popover {
+  position: fixed;
+  z-index: 2147483647;
+  max-width: 280px;
+  background: #161616;
+  color: #fafafa;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  padding: 12px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  pointer-events: auto;
+}
+
+.perfext-popover-tag {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.perfext-popover-tag.red {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+.perfext-popover-tag.yellow {
+  background: rgba(234, 179, 8, 0.18);
+  color: #fde047;
+}
+
+.perfext-popover-suggestion {
+  color: #d4d4d4;
+  margin: 0 0 8px;
+}
+
+.perfext-popover-replacement {
+  display: block;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  color: #fafafa;
+  word-break: break-word;
+}
+
+.perfext-popover-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.perfext-btn {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.perfext-btn-accept {
+  background: #fafafa;
+  color: #000;
+}
+
+.perfext-btn-deny {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #a3a3a3;
+}
