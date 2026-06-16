@@ -14,6 +14,12 @@ name: Package download zip
 on:
   push:
     branches: [main, master]
+    # Only rebuild when something that affects the packaged zip changed, so
+    # unrelated pushes (docs, landing-page tweaks) don't churn a new commit.
+    paths:
+      - "apps/extension/**"
+      - "scripts/package-extension.mjs"
+      - ".github/workflows/package-download.yml"
 
 permissions:
   contents: write
