@@ -129,6 +129,11 @@ The landing page's "Download latest" button serves that file directly
 folder via `chrome://extensions` → **Load unpacked** (the zip is unpacked for
 local installs; the Chrome Web Store accepts the zip as-is once published).
 
+> **Deploying (Vercel etc.):** `apps/landing-page/public/perfext-extension.zip`
+> is **committed to the repo** so static hosts serve it without running any
+> extension build. After changing the extension, run `pnpm package:extension`
+> and commit the refreshed zip, then redeploy.
+
 To only build the zip without copying it:
 
 ```bash
