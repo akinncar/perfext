@@ -39,7 +39,7 @@ export default function Home() {
           Perfext
         </p>
         <h1 className="text-balance text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
-          Make perfect texts.
+          Make Perfect Texts.
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-balance text-lg text-muted">
           A browser extension that quietly improves your writing as you type —
@@ -146,7 +146,7 @@ export default function Home() {
 
       <footer className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-8 text-sm text-muted">
-          © {new Date().getFullYear()} Perfext · make perfect texts
+          © {new Date().getFullYear()} Perfext · Make Perfect Texts
         </div>
       </footer>
     </main>
