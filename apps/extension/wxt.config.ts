@@ -9,6 +9,13 @@ export default defineConfig({
       port: 3001,
     },
   },
+  // On `pnpm dev`, open Chrome straight onto the landing-page playground (a
+  // scratch page with text fields) instead of a blank new tab, so the content
+  // script has something to attach to right away. The landing-page Next dev
+  // server runs in parallel on port 3000.
+  webExt: {
+    startUrls: ["http://localhost:3000/playground"],
+  },
   manifest: {
     name: "Perfext — make perfect texts",
     description:
