@@ -53,21 +53,23 @@ export function App() {
         </label>
       </div>
 
-      {needsKey && (
+      {needsKey ? (
         <div className="callout">
           <p>Add an API key to start getting suggestions.</p>
           <button className="callout-action" onClick={openSetup}>
             Open setup guide
           </button>
         </div>
+      ) : (
+        <>
+          <SettingsForm settings={settings} onChange={update} />
+
+          <button className="save" onClick={onSave}>
+            Save
+          </button>
+          <div className="status">{status}</div>
+        </>
       )}
-
-      <SettingsForm settings={settings} onChange={update} />
-
-      <button className="save" onClick={onSave}>
-        Save
-      </button>
-      <div className="status">{status}</div>
     </div>
   );
 }
