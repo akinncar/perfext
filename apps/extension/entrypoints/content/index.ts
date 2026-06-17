@@ -18,6 +18,9 @@ export default defineContentScript({
 
     const getSettings = () => settings;
     const controllers = new Map<Element, FieldController>();
+    // Roots/documents we've already wired up, so traversal is idempotent.
+    const installedDocs = new WeakSet<Document>();
+    const installedRoots = new WeakSet<ShadowRoot>();
 
     // Only free-form prose fields make sense for a writing assistant. We cover
     // <textarea> (always) and text-like <input>s, but skip inputs whose value
@@ -31,9 +34,7 @@ export default defineContentScript({
       }
       if (node instanceof HTMLInputElement) {
         const type = (node.getAttribute("type") || "").toLowerCase();
-        return (
-          TEXT_INPUT_TYPES.has(type) && !node.disabled && !node.readOnly
-        );
+        return TEXT_INPUT_TYPES.has(type) && !node.disabled && !node.readOnly;
       }
       return false;
     }
@@ -43,28 +44,21 @@ export default defineContentScript({
       controllers.set(el, new FieldController(createTextSource(el), getSettings));
     }
 
-    function scan(root: ParentNode = document) {
-      if (!settings.enabled) return;
-      root.querySelectorAll("textarea, input").forEach((el) => {
-        if (isTargetField(el)) attach(el as HTMLTextAreaElement);
-      });
-    }
-
     // The root editable host for a focus target: the topmost element that is
     // itself editable (skips contenteditable="false" islands automatically, as
     // isContentEditable is false for them).
     function contentEditableRoot(target: EventTarget | null): HTMLElement | null {
       const el = target instanceof HTMLElement ? target : null;
       if (!el || !el.isContentEditable) return null;
-      // Skip surfaces that are really inputs in disguise or non-prose editors.
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
         return null;
       }
+      const body = el.ownerDocument?.body;
       let root = el;
       while (
         root.parentElement &&
         root.parentElement.isContentEditable &&
-        root.parentElement !== document.body
+        root.parentElement !== body
       ) {
         root = root.parentElement;
       }
@@ -80,24 +74,25 @@ export default defineContentScript({
       if (root && !controllers.has(root)) attach(root);
     }
 
-    function teardownAll() {
-      controllers.forEach((c) => c.destroy());
-      controllers.clear();
+    // Scan a root (document, element, or shadow root) for prose inputs, then
+    // descend into open shadow roots and same-origin iframes nested within it.
+    function scan(root: ParentNode) {
+      if (!settings.enabled) return;
+      root.querySelectorAll("textarea, input").forEach((el) => {
+        if (isTargetField(el)) attach(el as HTMLElement);
+      });
+      root.querySelectorAll("*").forEach((el) => {
+        const sr = (el as HTMLElement).shadowRoot;
+        if (sr) installShadowRoot(sr);
+        if (el instanceof HTMLIFrameElement) installIframe(el);
+      });
     }
 
-    // Initial scan, plus any contenteditable already focused at load.
-    scan();
-    activateFocused(document.activeElement);
-
-    // Live a contenteditable when the user focuses into it.
-    document.addEventListener("focusin", (e) => activateFocused(e.target), true);
-
-    // Watch for fields added/removed dynamically (SPAs).
-    const observer = new MutationObserver((mutations) => {
+    function handleMutations(mutations: MutationRecord[]) {
       if (!settings.enabled) return;
       for (const m of mutations) {
         m.addedNodes.forEach((n) => {
-          if (isTargetField(n)) attach(n as HTMLTextAreaElement);
+          if (isTargetField(n)) attach(n as HTMLElement);
           else if (n instanceof Element) scan(n);
         });
         m.removedNodes.forEach((n) => {
@@ -111,11 +106,61 @@ export default defineContentScript({
           }
         });
       }
-    });
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+    }
+
+    function observe(root: Document | ShadowRoot) {
+      const target =
+        root instanceof Document ? root.documentElement : root;
+      new MutationObserver(handleMutations).observe(target, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    // Editors are frequently mounted inside open shadow roots. Focus events are
+    // composed and bubble to the host document, so the host's focusin already
+    // covers contenteditable activation here — we just scan + observe.
+    function installShadowRoot(sr: ShadowRoot) {
+      if (installedRoots.has(sr)) return;
+      installedRoots.add(sr);
+      scan(sr);
+      observe(sr);
+    }
+
+    // Same-origin iframes have their own document and event system, so they get
+    // their own focusin + observer. Cross-origin frames throw on access here and
+    // are skipped (out of scope).
+    function installIframe(frame: HTMLIFrameElement) {
+      const tryInstall = () => {
+        let doc: Document | null = null;
+        try {
+          doc = frame.contentDocument;
+        } catch {
+          doc = null; // cross-origin
+        }
+        if (doc) installDocument(doc);
+      };
+      tryInstall();
+      // Re-install when the frame navigates / finishes loading late.
+      frame.addEventListener("load", tryInstall);
+    }
+
+    function installDocument(doc: Document) {
+      if (installedDocs.has(doc)) return;
+      installedDocs.add(doc);
+      scan(doc);
+      activateFocused(doc.activeElement);
+      doc.addEventListener("focusin", (e) => activateFocused(e.target), true);
+      observe(doc);
+    }
+
+    function teardownAll() {
+      controllers.forEach((c) => c.destroy());
+      controllers.clear();
+    }
+
+    // Wire up the top document; traversal handles nested frames and shadow DOM.
+    installDocument(document);
 
     // React to settings changes from the popup.
     onSettingsChanged((next) => {
@@ -124,7 +169,8 @@ export default defineContentScript({
       if (!next.enabled) {
         teardownAll();
       } else if (!wasEnabled) {
-        scan();
+        scan(document);
+        activateFocused(document.activeElement);
       } else {
         controllers.forEach((c) => c.refresh());
       }
