@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import { verifyKey } from "@/lib/ai";
+import { AnalysisSettings } from "@/lib/AnalysisSettings";
+import { verify } from "@/lib/api-client";
 import { loadSettings, saveSettings } from "@/lib/settings";
-import { SettingsForm } from "@/lib/SettingsForm";
 import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
 
 type Phase = "loading" | "form" | "testing" | "done";
+
+function isConfigured(s: Settings): boolean {
+  return s.mode === "server" ? !!s.session?.user : !!s.apiKey.trim();
+}
 
 export function App() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -14,7 +18,7 @@ export function App() {
   useEffect(() => {
     loadSettings().then((s) => {
       setSettings(s);
-      setPhase(s.apiKey.trim() ? "done" : "form");
+      setPhase(isConfigured(s) ? "done" : "form");
     });
   }, []);
 
@@ -26,7 +30,7 @@ export function App() {
   async function onTestAndSave() {
     setPhase("testing");
     setError("");
-    const result = await verifyKey(settings);
+    const result = await verify(settings);
     if (!result.ok) {
       setError(result.error);
       setPhase("form");
@@ -81,15 +85,15 @@ function Setup({
     <section className="card">
       <h1>Let&apos;s get you set up</h1>
       <p className="lead">
-        Perfext runs on your own AI model. Pick a provider, paste an API key, and
-        we&apos;ll confirm it works — about a minute, and nothing leaves your
-        browser except calls to the model you choose.
+        Choose how Perfext checks your writing: use <strong>Perfext AI</strong>{" "}
+        with a free account, or bring <strong>your own key</strong> from OpenAI
+        or Anthropic. We&apos;ll confirm it works before you go.
       </p>
 
-      <SettingsForm settings={settings} onChange={onChange} />
+      <AnalysisSettings settings={settings} onChange={onChange} />
 
       <button className="save" onClick={onSubmit} disabled={testing}>
-        {testing ? "Checking your key…" : "Test & save"}
+        {testing ? "Checking your setup…" : "Test & save"}
       </button>
       <div className={error ? "status error" : "status"}>{error}</div>
     </section>
@@ -100,7 +104,7 @@ function Done({ onEdit }: { onEdit: () => void }) {
   return (
     <section className="card">
       <h1>You&apos;re all set ✓</h1>
-      <p className="lead">Your key is saved and working. Here&apos;s what happens next:</p>
+      <p className="lead">Your setup is saved and working. Here&apos;s what happens next:</p>
       <ol className="steps">
         <li>
           <strong>Pin Perfext</strong> — click the puzzle-piece icon in your

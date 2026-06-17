@@ -19,12 +19,14 @@ export default defineConfig({
   manifest: {
     name: "Perfext — make perfect texts",
     description:
-      "AI-powered writing suggestions as you type, powered by your own AI model and key.",
+      "AI-powered writing suggestions as you type, with Perfext AI or your own key.",
     permissions: ["storage", "activeTab"],
-    // The user's AI provider endpoints the background worker is allowed to call.
+    // The background worker talks only to the Perfext API now (not providers
+    // directly). Update this list if you point the extension at a different
+    // API origin via the setup page's base-URL setting.
     host_permissions: [
-      "https://api.openai.com/*",
-      "https://api.anthropic.com/*",
+      "https://api.perfext.app/*",
+      "http://localhost:8787/*",
     ],
     action: {
       default_title: "Perfext settings",

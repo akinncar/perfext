@@ -15,6 +15,12 @@ reversible. Open questions are flagged with **Q:** for you to confirm later.
 
 ## Backend / Supabase (the big one)
 
+> **Update (2026-06-17): superseded.** A backend now exists — the closed-source
+> **Perfext API** (`../perfext-api`): Express + TypeScript + Supabase Auth,
+> with Server AI (our key) and BYOK (the user's key, RSA-encrypted, never
+> stored). The extension is now a thin client (`lib/api-client.ts`); `lib/ai.ts`
+> was removed. The original MVP decision below is kept for history.
+
 `init.md` says "use supabase" but also "not sure if it needs a back-end … you
 can evaluate," and `back-end.md` was left empty for me to decide.
 

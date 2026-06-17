@@ -8,7 +8,7 @@ interface SettingsFormProps {
 }
 
 /**
- * The provider / model / API key / debounce fields, shared by the popup and the
+ * The BYOK provider / model / API key fields, shared by the popup and the
  * first-run welcome page. Purely controlled: it renders `settings` and reports
  * every edit through `onChange`, including keeping the model valid for the
  * selected provider.
@@ -69,25 +69,9 @@ export function SettingsForm({ settings, onChange }: SettingsFormProps) {
           <a href={provider.keyUrl} target="_blank" rel="noreferrer">
             Create a {provider.label} key
           </a>
-          . Stored locally in your browser and used only to call {provider.label}{" "}
-          directly — your text never passes through any Perfext server.
+          . Sent encrypted to Perfext and used only to call {provider.label} on
+          your behalf — never stored on our servers.
         </p>
-      </div>
-
-      <div className="field">
-        <label>
-          Wait before checking ({(settings.debounceMs / 1000).toFixed(0)}s)
-        </label>
-        <input
-          type="range"
-          min={2000}
-          max={15000}
-          step={1000}
-          value={settings.debounceMs}
-          onChange={(e) =>
-            onChange({ ...settings, debounceMs: Number(e.target.value) })
-          }
-        />
       </div>
     </>
   );

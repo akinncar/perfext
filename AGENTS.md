@@ -5,7 +5,7 @@ AI-powered writing extension plus its landing page.
 
 ## What this repo is
 
-A Turborepo + pnpm monorepo with two apps and no backend:
+A Turborepo + pnpm monorepo with two apps:
 
 | Path | What | Stack |
 | --- | --- | --- |
@@ -14,9 +14,12 @@ A Turborepo + pnpm monorepo with two apps and no backend:
 | `scripts/` | Repo tooling | Node ESM scripts |
 | `specs/` | Product specs + `DECISIONS.md` (rationale + open questions) |
 
-The extension calls the user's AI provider (OpenAI / Anthropic) **directly**
-from the background worker using a key stored in `chrome.storage.local`. There
-is intentionally no server — see `specs/DECISIONS.md`.
+The extension is a **thin client**: all AI logic lives in the **Perfext API**
+(`../perfext-api`, a separate private repo — Express + TypeScript + Supabase).
+The background worker calls that API over HTTPS; it holds no provider keys or
+parsing logic. Two modes: **Server AI** (login required, server's key) and
+**BYOK** (login optional, the user's key sent RSA-encrypted and never stored).
+See `../perfext-api/docs/specs/2026-06-17-perfext-api-design.md`.
 
 ## Toolchain — read this first
 
@@ -49,14 +52,18 @@ Ports: landing page **3000**, extension dev server **3001** (set in
 - **Popup (config UI):** `apps/extension/entrypoints/popup/` (React) — provider,
   model, API key, enable toggle, debounce slider. Saves via `lib/settings.ts`.
 - **Background:** `apps/extension/entrypoints/background.ts` — receives
-  `perfext:analyze` messages, calls `lib/ai.ts`, returns `Issue[]`.
+  `perfext:analyze` messages, calls the Perfext API via `lib/api-client.ts`
+  (refreshing the session on a 401), and returns `Issue[]`.
 - **Content script:** `apps/extension/entrypoints/content/index.ts` discovers
-  text fields; `lib/highlighter.ts` (`FieldController`) draws the mirror-overlay
+  text fields; `lib/text-surface/` (`FieldController`) draws the mirror-overlay
   highlights + the analyzing spinner; `lib/popover.ts` is the shared suggestion
   popover.
-- **AI:** `apps/extension/lib/ai.ts` — provider calls + JSON parsing + anchoring
-  spans back to character offsets. Add providers here.
-- **Types:** `apps/extension/lib/types.ts` (settings, issues, messaging).
+- **API client:** `apps/extension/lib/api-client.ts` — typed calls to
+  `/v1/analyze`, `/v1/auth/*`, `/v1/providers`, `/v1/public-key`.
+  `lib/crypto.ts` RSA-encrypts the BYOK key (Web Crypto). There is no AI/parsing
+  logic in the extension anymore — add providers in `perfext-api`.
+- **Types:** `apps/extension/lib/types.ts` (settings, auth/session, mode,
+  issues, messaging).
 
 Scope note: highlighting supports `<textarea>` and text `<input>`;
 `contenteditable` editors are not handled yet.

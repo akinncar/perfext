@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import { AnalysisSettings } from "@/lib/AnalysisSettings";
 import { loadSettings, saveSettings } from "@/lib/settings";
-import { SettingsForm } from "@/lib/SettingsForm";
 import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
 
 export function App() {
@@ -26,13 +26,7 @@ export function App() {
     setTimeout(() => setStatus(""), 1500);
   }
 
-  function openSetup() {
-    chrome.tabs.create({ url: chrome.runtime.getURL("/welcome.html") });
-  }
-
   if (!loaded) return <div className="app">Loading…</div>;
-
-  const needsKey = !settings.apiKey.trim();
 
   return (
     <div className="app">
@@ -47,29 +41,32 @@ export function App() {
             checked={settings.enabled}
             onChange={(e) => update({ ...settings, enabled: e.target.checked })}
           />
-          <span style={{ fontSize: 12 }}>
-            {settings.enabled ? "On" : "Off"}
-          </span>
+          <span style={{ fontSize: 12 }}>{settings.enabled ? "On" : "Off"}</span>
         </label>
       </div>
 
-      {needsKey ? (
-        <div className="callout">
-          <p>Add an API key to start getting suggestions.</p>
-          <button className="callout-action" onClick={openSetup}>
-            Open setup guide
-          </button>
-        </div>
-      ) : (
-        <>
-          <SettingsForm settings={settings} onChange={update} />
+      <AnalysisSettings settings={settings} onChange={update} />
 
-          <button className="save" onClick={onSave}>
-            Save
-          </button>
-          <div className="status">{status}</div>
-        </>
-      )}
+      <div className="field">
+        <label>
+          Wait before checking ({(settings.debounceMs / 1000).toFixed(0)}s)
+        </label>
+        <input
+          type="range"
+          min={2000}
+          max={15000}
+          step={1000}
+          value={settings.debounceMs}
+          onChange={(e) =>
+            update({ ...settings, debounceMs: Number(e.target.value) })
+          }
+        />
+      </div>
+
+      <button className="save" onClick={onSave}>
+        Save
+      </button>
+      <div className="status">{status}</div>
     </div>
   );
 }

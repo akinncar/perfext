@@ -26,8 +26,8 @@ const features = [
     body: "Red marks clear mistakes, yellow marks lines that could read better. Everything else stays untouched.",
   },
   {
-    title: "Your model, your key",
-    body: "Bring your own OpenAI or Anthropic key. Your text goes straight to the model you choose — nothing in between.",
+    title: "Perfext AI, or your own key",
+    body: "Sign in to use Perfext's own AI, or bring your own OpenAI or Anthropic key — sent encrypted and never stored.",
   },
 ];
 

@@ -2,20 +2,61 @@ export type Provider = "openai" | "anthropic";
 
 export type Severity = "red" | "yellow";
 
+/** How analysis is performed: the user's own key, or the server's. */
+export type Mode = "byok" | "server";
+
+/**
+ * The default Perfext API the extension talks to. End users need no backend —
+ * the extension ships pointing here. Override per-install via the setup page's
+ * advanced field (and `host_permissions` in `wxt.config.ts` if the origin
+ * changes).
+ */
+export const DEFAULT_API_BASE_URL = "https://api.perfext.app";
+
+/** An authenticated session, as returned by the API's auth routes. */
+export interface Session {
+  accessToken: string;
+  refreshToken: string;
+  user: { id: string; email: string | null } | null;
+}
+
 export interface Settings {
   enabled: boolean;
+  /** Which usage mode the extension uses for analysis. */
+  mode: Mode;
+
+  // ---- BYOK (bring your own key) ----
   provider: Provider;
   model: string;
+  /** The user's own provider key. Sent RSA-encrypted to the API, never stored server-side. */
   apiKey: string;
+
+  // ---- Server AI ----
+  /** Provider chosen for Server AI (must be offered by the API). */
+  serverProvider: string;
+  /** Model chosen for Server AI ("" = let the server pick its default). */
+  serverModel: string;
+
+  // ---- Account ----
+  session: Session | null;
+
+  /** Base URL of the Perfext API. Defaults to prod. */
+  apiBaseUrl: string;
+
   /** How long to wait after the user stops typing before analyzing, in ms. */
   debounceMs: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
+  mode: "byok",
   provider: "openai",
   model: "gpt-4o-mini",
   apiKey: "",
+  serverProvider: "openai",
+  serverModel: "",
+  session: null,
+  apiBaseUrl: DEFAULT_API_BASE_URL,
   debounceMs: 5000,
 };
 
@@ -46,6 +87,18 @@ export const MODELS: Record<Provider, ProviderInfo> = {
     keyPlaceholder: "sk-ant-…",
   },
 };
+
+/** A server-AI provider offered by the API. */
+export interface ServerProvider {
+  id: string;
+  label: string;
+  models: string[];
+}
+
+export interface ProvidersResponse {
+  providers: ServerProvider[];
+  default: { provider: string; model: string };
+}
 
 /** A single issue the model found in the text. */
 export interface Issue {
