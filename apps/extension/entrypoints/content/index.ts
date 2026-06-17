@@ -38,7 +38,7 @@ export default defineContentScript({
       return false;
     }
 
-    function attach(el: HTMLTextAreaElement | HTMLInputElement) {
+    function attach(el: HTMLElement) {
       if (controllers.has(el)) return;
       controllers.set(el, new FieldController(createTextSource(el), getSettings));
     }
@@ -50,13 +50,47 @@ export default defineContentScript({
       });
     }
 
+    // The root editable host for a focus target: the topmost element that is
+    // itself editable (skips contenteditable="false" islands automatically, as
+    // isContentEditable is false for them).
+    function contentEditableRoot(target: EventTarget | null): HTMLElement | null {
+      const el = target instanceof HTMLElement ? target : null;
+      if (!el || !el.isContentEditable) return null;
+      // Skip surfaces that are really inputs in disguise or non-prose editors.
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+        return null;
+      }
+      let root = el;
+      while (
+        root.parentElement &&
+        root.parentElement.isContentEditable &&
+        root.parentElement !== document.body
+      ) {
+        root = root.parentElement;
+      }
+      return root;
+    }
+
+    // Activation policy (perf): a contenteditable becomes live only once it is
+    // focused — pages can host many editors, and we only want trackers on the
+    // one the user is actually writing in. textarea/input stay eagerly scanned.
+    function activateFocused(target: EventTarget | null) {
+      if (!settings.enabled) return;
+      const root = contentEditableRoot(target);
+      if (root && !controllers.has(root)) attach(root);
+    }
+
     function teardownAll() {
       controllers.forEach((c) => c.destroy());
       controllers.clear();
     }
 
-    // Initial scan.
+    // Initial scan, plus any contenteditable already focused at load.
     scan();
+    activateFocused(document.activeElement);
+
+    // Live a contenteditable when the user focuses into it.
+    document.addEventListener("focusin", (e) => activateFocused(e.target), true);
 
     // Watch for fields added/removed dynamically (SPAs).
     const observer = new MutationObserver((mutations) => {

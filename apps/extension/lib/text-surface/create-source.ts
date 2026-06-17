@@ -1,3 +1,4 @@
+import { ContentEditableSource } from "./content-editable-source";
 import { TextInputSource } from "./text-input-source";
 import { TextSource } from "./text-source";
 
@@ -9,6 +10,9 @@ import { TextSource } from "./text-source";
 export function createTextSource(el: HTMLElement): TextSource {
   if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
     return new TextInputSource(el);
+  }
+  if (el.isContentEditable) {
+    return new ContentEditableSource(el);
   }
   throw new Error(
     `[Perfext] no TextSource for <${el.tagName.toLowerCase()}>`,

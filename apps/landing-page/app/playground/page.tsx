@@ -64,6 +64,46 @@ export default function Playground() {
           defaultValue="Their going to recieve the package tommorow."
           className="mt-2 w-full rounded-xl border border-border bg-surface p-4 text-base text-white outline-none focus:border-neutral-500"
         />
+
+        <label
+          htmlFor="playground-contenteditable"
+          className="mt-8 block text-sm font-medium text-muted"
+        >
+          Contenteditable (rich editor)
+        </label>
+        <div
+          id="playground-contenteditable"
+          contentEditable
+          suppressContentEditableWarning
+          className="mt-2 w-full rounded-xl border border-border bg-surface p-4 text-base leading-7 text-white outline-none focus:border-neutral-500"
+        >
+          <div>I beleive this paragraph have a couple of mistakes in it.</div>
+          <div>The second line is seperate, and it could of been clearer.</div>
+        </div>
+
+        <label
+          htmlFor="playground-contenteditable-rich"
+          className="mt-8 block text-sm font-medium text-muted"
+        >
+          Contenteditable with a mention chip (skipped island)
+        </label>
+        <div
+          id="playground-contenteditable-rich"
+          contentEditable
+          suppressContentEditableWarning
+          className="mt-2 w-full rounded-xl border border-border bg-surface p-4 text-base leading-7 text-white outline-none focus:border-neutral-500"
+        >
+          <p>
+            Hey{" "}
+            <span
+              contentEditable={false}
+              className="rounded bg-neutral-700 px-1.5 py-0.5 text-sm"
+            >
+              @alice
+            </span>{" "}
+            , thanks for the quick feeback — I definately owe you one.
+          </p>
+        </div>
       </section>
     </main>
   );
