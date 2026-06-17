@@ -39,48 +39,54 @@ export class OverlayRenderer {
     document.body.appendChild(this.spinner);
   }
 
-  /** Re-draw all marks at the field's current geometry. */
+  /**
+   * Re-draw all marks at the field's current geometry. All layout *reads*
+   * (getBoundingClientRect, rectsForRange) happen first, building detached mark
+   * elements; the live DOM is then mutated in one *write* pass. Never interleave
+   * a read after a write — that is what keeps per-frame cost bounded.
+   */
   render(issues: Issue[], denied: Set<string>) {
-    this.container.replaceChildren();
-
+    // --- read pass ---
     const fieldRect = this.source.el.getBoundingClientRect();
     const hidden = fieldRect.width === 0 || fieldRect.height === 0;
+    const marks: HTMLDivElement[] = [];
+
+    if (!hidden) {
+      const text = this.source.getText();
+      const ordered = [...issues].sort((a, b) => a.start - b.start);
+
+      for (const issue of ordered) {
+        // Skip issues whose anchor no longer matches the current text.
+        if (
+          issue.start < 0 ||
+          issue.end > text.length ||
+          text.slice(issue.start, issue.end) !== issue.text
+        ) {
+          continue;
+        }
+
+        const isDenied = denied.has(issue.id);
+        const enriched: Issue & { denied?: boolean } = {
+          ...issue,
+          denied: isDenied,
+        };
+
+        for (const rect of this.source.rectsForRange(issue.start, issue.end)) {
+          // Clip to the field box, mimicking the field's own `overflow: hidden`
+          // so underlines for scrolled-away text don't bleed outside, then cull
+          // anything scrolled out of the viewport entirely.
+          const clipped = intersect(rect, fieldRect);
+          if (!clipped || !inViewport(clipped)) continue;
+          marks.push(this.makeMark(enriched, isDenied, clipped));
+        }
+      }
+    }
+
+    // --- write pass ---
     this.container.style.display = hidden ? "none" : "block";
     this.positionSpinner(fieldRect);
-    if (hidden) {
-      this.spinner.style.display = "none";
-      return;
-    }
-
-    const text = this.source.getText();
-    const ordered = [...issues].sort((a, b) => a.start - b.start);
-
-    for (const issue of ordered) {
-      // Skip issues whose anchor no longer matches the current text.
-      if (
-        issue.start < 0 ||
-        issue.end > text.length ||
-        text.slice(issue.start, issue.end) !== issue.text
-      ) {
-        continue;
-      }
-
-      const isDenied = denied.has(issue.id);
-      const enriched: Issue & { denied?: boolean } = {
-        ...issue,
-        denied: isDenied,
-      };
-
-      for (const rect of this.source.rectsForRange(issue.start, issue.end)) {
-        // Clip to the field box, mimicking the field's own `overflow: hidden`
-        // so underlines for scrolled-away text don't bleed outside.
-        const clipped = intersect(rect, fieldRect);
-        if (!clipped) continue;
-        // Viewport culling: skip marks scrolled out of view entirely.
-        if (!inViewport(clipped)) continue;
-        this.container.appendChild(this.makeMark(enriched, isDenied, clipped));
-      }
-    }
+    if (hidden) this.spinner.style.display = "none";
+    this.container.replaceChildren(...marks);
   }
 
   showSpinner() {
