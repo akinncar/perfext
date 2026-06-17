@@ -1,5 +1,6 @@
 import { FieldController } from "@/lib/text-surface/field-controller";
 import { createTextSource } from "@/lib/text-surface/create-source";
+import { isBlocklisted, resolveQuirk } from "@/lib/text-surface/quirks";
 import { loadSettings, onSettingsChanged } from "@/lib/settings";
 import { Settings, DEFAULT_SETTINGS } from "@/lib/types";
 import "./style.css";
@@ -39,8 +40,17 @@ export default defineContentScript({
       return false;
     }
 
+    // Code editors (Monaco/CodeMirror/ACE) and any host-disabled surface are
+    // never highlighted — writing suggestions are meaningless there.
+    function shouldSkip(el: HTMLElement): boolean {
+      if (isBlocklisted(el)) return true;
+      const host = el.ownerDocument?.location?.host ?? location.host;
+      const quirk = resolveQuirk(el, host);
+      return quirk?.enabled?.(el) === false;
+    }
+
     function attach(el: HTMLElement) {
-      if (controllers.has(el)) return;
+      if (controllers.has(el) || shouldSkip(el)) return;
       controllers.set(el, new FieldController(createTextSource(el), getSettings));
     }
 
