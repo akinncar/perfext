@@ -79,6 +79,11 @@ function Setup({
   testing: boolean;
   error: string;
 }) {
+  const loggedIn = !!settings.session?.user;
+  // Perfext AI needs an account: when logged out, the only action is to log in
+  // (offered inside SourceSettings), so there's nothing to test or save here.
+  const hostedLockedOut = settings.mode === "server" && !loggedIn;
+
   return (
     <section className="card">
       <h1>Let&apos;s get you set up</h1>
@@ -91,14 +96,24 @@ function Setup({
       <SourceSettings
         settings={settings}
         onChange={onChange}
-        loggedIn={!!settings.session?.user}
+        loggedIn={loggedIn}
         onRequestAuth={() => chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") })}
       />
 
-      <button className="save" onClick={onSubmit} disabled={testing}>
-        {testing ? "Checking your setup…" : "Test & save"}
-      </button>
-      <div className={error ? "status error" : "status"}>{error}</div>
+      {!hostedLockedOut && (
+        <>
+          <button className="save" onClick={onSubmit} disabled={testing}>
+            {testing
+              ? loggedIn
+                ? "Saving…"
+                : "Checking your setup…"
+              : loggedIn
+                ? "Save"
+                : "Test & save"}
+          </button>
+          <div className={error ? "status error" : "status"}>{error}</div>
+        </>
+      )}
 
       <p className="hint center">
         Prefer the full settings?{" "}
