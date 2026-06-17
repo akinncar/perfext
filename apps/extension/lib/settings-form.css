@@ -172,3 +172,91 @@
   color: var(--muted);
   margin: 0 0 10px;
 }
+
+/* Header actions (popup) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: #555;
+}
+
+.hint.center {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.link-inline {
+  border: none;
+  background: none;
+  color: var(--text);
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Hosted (Perfext AI) note */
+.hosted-note {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  margin-bottom: 4px;
+}
+
+.hosted-note .hint {
+  margin: 0 0 8px;
+}
+
+.hosted-note .save:last-child {
+  margin-top: 4px;
+}
+
+/* Auth view */
+.auth-view .link-btn {
+  display: block;
+  margin: 10px auto 0;
+}
+
+/* Page titles + plans badge (full options page) */
+.page-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.badge.sm {
+  padding: 0 6px;
+  font-size: 9px;
+  margin-left: 6px;
+}
+
+.plans .badge {
+  margin-top: 12px;
+}

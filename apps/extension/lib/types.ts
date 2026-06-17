@@ -23,12 +23,6 @@ export interface Settings {
   /** The user's own provider key. Sent RSA-encrypted to the API, never stored server-side. */
   apiKey: string;
 
-  // ---- Server AI ----
-  /** Provider chosen for Server AI (must be offered by the API). */
-  serverProvider: string;
-  /** Model chosen for Server AI ("" = let the server pick its default). */
-  serverModel: string;
-
   // ---- Account ----
   session: Session | null;
 
@@ -42,8 +36,6 @@ export const DEFAULT_SETTINGS: Settings = {
   provider: "openai",
   model: "gpt-4o-mini",
   apiKey: "",
-  serverProvider: "openai",
-  serverModel: "",
   session: null,
   debounceMs: 5000,
 };
@@ -75,18 +67,6 @@ export const MODELS: Record<Provider, ProviderInfo> = {
     keyPlaceholder: "sk-ant-…",
   },
 };
-
-/** A server-AI provider offered by the API. */
-export interface ServerProvider {
-  id: string;
-  label: string;
-  models: string[];
-}
-
-export interface ProvidersResponse {
-  providers: ServerProvider[];
-  default: { provider: string; model: string };
-}
 
 /** A single issue the model found in the text. */
 export interface Issue {

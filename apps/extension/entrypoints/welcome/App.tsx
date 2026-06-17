@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { AnalysisSettings } from "@/lib/AnalysisSettings";
 import { verify } from "@/lib/api-client";
 import { loadSettings, saveSettings } from "@/lib/settings";
+import { SourceSettings } from "@/lib/views/SourceSettings";
 import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
 
 type Phase = "loading" | "form" | "testing" | "done";
@@ -40,9 +40,7 @@ export function App() {
     setPhase("done");
   }
 
-  if (phase === "loading") {
-    return <main className="welcome">Loading…</main>;
-  }
+  if (phase === "loading") return <main className="welcome">Loading…</main>;
 
   return (
     <main className="welcome">
@@ -85,17 +83,29 @@ function Setup({
     <section className="card">
       <h1>Let&apos;s get you set up</h1>
       <p className="lead">
-        Choose how Perfext checks your writing: use <strong>Perfext AI</strong>{" "}
-        with a free account, or bring <strong>your own key</strong> from OpenAI
-        or Anthropic. We&apos;ll confirm it works before you go.
+        Choose how Perfext checks your writing: bring <strong>your own key</strong>{" "}
+        from OpenAI or Anthropic, or sign in to use <strong>Perfext AI</strong>.
+        We&apos;ll confirm it works before you go.
       </p>
 
-      <AnalysisSettings settings={settings} onChange={onChange} />
+      <SourceSettings
+        settings={settings}
+        onChange={onChange}
+        loggedIn={!!settings.session?.user}
+        onRequestAuth={() => chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") })}
+      />
 
       <button className="save" onClick={onSubmit} disabled={testing}>
         {testing ? "Checking your setup…" : "Test & save"}
       </button>
       <div className={error ? "status error" : "status"}>{error}</div>
+
+      <p className="hint center">
+        Prefer the full settings?{" "}
+        <button className="link-inline" onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") })}>
+          Open Perfext settings
+        </button>
+      </p>
     </section>
   );
 }

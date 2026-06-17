@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { encryptWithPublicKey } from "./crypto";
-import { Issue, ProvidersResponse, Session, Settings } from "./types";
+import { Issue, Session, Settings } from "./types";
 
 /**
  * Typed client for the Perfext API. The extension holds no AI logic — it only
@@ -96,12 +96,6 @@ export async function logout(session: Session | null): Promise<void> {
   }
 }
 
-// ---- Providers ----
-
-export function fetchProviders(): Promise<ProvidersResponse> {
-  return request<ProvidersResponse>(`${API_BASE_URL}/v1/providers`, { method: "GET" });
-}
-
 // ---- Public key (cached) ----
 
 let publicKeyPromise: Promise<string> | null = null;
@@ -147,12 +141,8 @@ export async function analyze(
     if (!accessToken) {
       throw new ApiClientError(401, "unauthorized", "Log in to use Perfext's server AI.");
     }
-    body = {
-      text,
-      mode: "server",
-      provider: settings.serverProvider || undefined,
-      model: settings.serverModel || undefined,
-    };
+    // Hosted AI is fully managed — the backend chooses provider + model.
+    body = { text, mode: "server" };
   } else {
     if (!settings.apiKey.trim()) {
       throw new ApiClientError(400, "missing_key", "Add your API key in the Perfext settings.");

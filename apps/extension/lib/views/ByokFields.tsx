@@ -1,19 +1,17 @@
-import { MODELS, Provider, Settings } from "./types";
-import "./settings-form.css";
+import { MODELS, Provider, Settings } from "../types";
+import "../settings-form.css";
 
-interface SettingsFormProps {
+interface ByokFieldsProps {
   settings: Settings;
-  /** Receives the full next settings object so callers stay stateless. */
   onChange: (next: Settings) => void;
 }
 
 /**
- * The BYOK provider / model / API key fields, shared by the popup and the
- * first-run welcome page. Purely controlled: it renders `settings` and reports
- * every edit through `onChange`, including keeping the model valid for the
+ * BYOK provider / model / API key fields. Purely controlled: renders `settings`
+ * and reports edits through `onChange`, keeping the model valid for the
  * selected provider.
  */
-export function SettingsForm({ settings, onChange }: SettingsFormProps) {
+export function ByokFields({ settings, onChange }: ByokFieldsProps) {
   const provider = MODELS[settings.provider];
 
   function onProviderChange(next: Provider) {

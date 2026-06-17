@@ -49,8 +49,15 @@ Ports: landing page **3000**, extension dev server **3001** (set in
 
 ## Architecture map
 
-- **Popup (config UI):** `apps/extension/entrypoints/popup/` (React) — provider,
-  model, API key, enable toggle, debounce slider. Saves via `lib/settings.ts`.
+- **Popup (compact UI):** `apps/extension/entrypoints/popup/` (React) — enable
+  toggle, the AI-source chooser (BYOK vs Perfext AI), inline login, and a gear
+  that opens the full settings page. Saves via `lib/settings.ts`.
+- **Options (full page):** `apps/extension/entrypoints/options/` — opened in a
+  tab from the popup gear; sidebar menu: AI source, Account (sign out), Plans
+  (TODO). Shares the view components in `lib/views/` with the popup/welcome.
+- **Shared views:** `apps/extension/lib/views/` — `SourceSettings` (BYOK vs
+  hosted toggle), `ByokFields`, `AuthView` (single-page login/signup),
+  `AccountPanel`, `PlansView`. `lib/useSettings.ts` loads + persists settings.
 - **Background:** `apps/extension/entrypoints/background.ts` — receives
   `perfext:analyze` messages, calls the Perfext API via `lib/api-client.ts`
   (refreshing the session on a 401), and returns `Issue[]`.
@@ -59,9 +66,10 @@ Ports: landing page **3000**, extension dev server **3001** (set in
   highlights + the analyzing spinner; `lib/popover.ts` is the shared suggestion
   popover.
 - **API client:** `apps/extension/lib/api-client.ts` — typed calls to
-  `/v1/analyze`, `/v1/auth/*`, `/v1/providers`, `/v1/public-key`.
-  `lib/crypto.ts` RSA-encrypts the BYOK key (Web Crypto). There is no AI/parsing
-  logic in the extension anymore — add providers in `perfext-api`.
+  `/v1/analyze`, `/v1/auth/*`, `/v1/public-key`. `lib/crypto.ts` RSA-encrypts the
+  BYOK key (Web Crypto). Hosted (server) mode sends only `{text, mode}` — the
+  backend picks provider + model. No AI/parsing logic in the extension — add
+  providers in `perfext-api`. The API base URL is build-time (`lib/config.ts`).
 - **Types:** `apps/extension/lib/types.ts` (settings, auth/session, mode,
   issues, messaging).
 

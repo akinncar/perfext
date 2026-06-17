@@ -1,27 +1,36 @@
-import { useEffect, useState } from "react";
-import { AnalysisSettings } from "@/lib/AnalysisSettings";
-import { loadSettings, saveSettings } from "@/lib/settings";
-import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
+import { useState } from "react";
+import { logout } from "@/lib/api-client";
+import { useSettings } from "@/lib/useSettings";
+import { AuthView } from "@/lib/views/AuthView";
+import { SourceSettings } from "@/lib/views/SourceSettings";
+import { Session } from "@/lib/types";
+
+type View = "main" | "auth";
 
 export function App() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [loaded, setLoaded] = useState(false);
+  const { settings, setSettings, save, loaded } = useSettings();
+  const [view, setView] = useState<View>("main");
   const [status, setStatus] = useState("");
 
-  useEffect(() => {
-    loadSettings().then((s) => {
-      setSettings(s);
-      setLoaded(true);
-    });
-  }, []);
+  const loggedIn = !!settings.session?.user;
 
-  function update(next: Settings) {
-    setSettings(next);
+  function openSettings() {
+    // Open the full settings page in a tab (room for the sidebar menu).
+    chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") });
+  }
+
+  function onToggleEnabled(enabled: boolean) {
     setStatus("");
+    save({ ...settings, enabled });
+  }
+
+  function onAuthenticated(session: Session) {
+    save({ ...settings, session });
+    setView("main");
   }
 
   async function onSave() {
-    await saveSettings(settings);
+    await save(settings);
     setStatus("Saved");
     setTimeout(() => setStatus(""), 1500);
   }
@@ -35,38 +44,64 @@ export function App() {
           <span className="dot" />
           Perfext
         </div>
-        <label className="switch row" style={{ gap: 8 }}>
-          <input
-            type="checkbox"
-            checked={settings.enabled}
-            onChange={(e) => update({ ...settings, enabled: e.target.checked })}
+        <div className="header-actions">
+          <label className="switch row" style={{ gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={settings.enabled}
+              onChange={(e) => onToggleEnabled(e.target.checked)}
+            />
+            <span style={{ fontSize: 12 }}>{settings.enabled ? "On" : "Off"}</span>
+          </label>
+          <button
+            className="icon-btn"
+            title="Settings"
+            aria-label="Open settings"
+            onClick={openSettings}
+          >
+            ⚙
+          </button>
+        </div>
+      </div>
+
+      {view === "auth" ? (
+        <AuthView onAuthenticated={onAuthenticated} onBack={() => setView("main")} />
+      ) : (
+        <>
+          <SourceSettings
+            settings={settings}
+            onChange={(next) => {
+              setSettings(next);
+              setStatus("");
+            }}
+            loggedIn={loggedIn}
+            onRequestAuth={() => setView("auth")}
           />
-          <span style={{ fontSize: 12 }}>{settings.enabled ? "On" : "Off"}</span>
-        </label>
-      </div>
 
-      <AnalysisSettings settings={settings} onChange={update} />
+          <button className="save" onClick={onSave}>
+            Save
+          </button>
+          <div className="status">{status}</div>
 
-      <div className="field">
-        <label>
-          Wait before checking ({(settings.debounceMs / 1000).toFixed(0)}s)
-        </label>
-        <input
-          type="range"
-          min={2000}
-          max={15000}
-          step={1000}
-          value={settings.debounceMs}
-          onChange={(e) =>
-            update({ ...settings, debounceMs: Number(e.target.value) })
-          }
-        />
-      </div>
-
-      <button className="save" onClick={onSave}>
-        Save
-      </button>
-      <div className="status">{status}</div>
+          {loggedIn ? (
+            <p className="hint center">
+              Signed in as {settings.session?.user?.email ?? "your account"} ·{" "}
+              <button
+                className="link-inline"
+                onClick={() => logout(settings.session).then(() => save({ ...settings, session: null }))}
+              >
+                Sign out
+              </button>
+            </p>
+          ) : (
+            <p className="hint center">
+              <button className="link-inline" onClick={() => setView("auth")}>
+                Log in or create an account
+              </button>
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }
