@@ -47,6 +47,27 @@ export function AnalysisSettings({ settings, onChange }: AnalysisSettingsProps) 
       ) : (
         <p className="hint">Log in above to use Perfext's own AI.</p>
       )}
+
+      <details className="advanced">
+        <summary>Advanced</summary>
+        <div className="field" style={{ marginTop: 10 }}>
+          <label>Perfext API URL</label>
+          <input
+            type="url"
+            value={settings.apiBaseUrl}
+            onChange={(e) =>
+              onChange({ ...settings, apiBaseUrl: e.target.value.trim() })
+            }
+            placeholder="https://api.perfext.app"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <p className="hint">
+            Where the extension sends analysis and auth requests. Use{" "}
+            <code>http://localhost:8787</code> to point at a local Perfext API.
+          </p>
+        </div>
+      </details>
     </>
   );
 }
