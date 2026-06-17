@@ -5,14 +5,6 @@ export type Severity = "red" | "yellow";
 /** How analysis is performed: the user's own key, or the server's. */
 export type Mode = "byok" | "server";
 
-/**
- * The default Perfext API the extension talks to. End users need no backend —
- * the extension ships pointing here. Override per-install via the setup page's
- * advanced field (and `host_permissions` in `wxt.config.ts` if the origin
- * changes).
- */
-export const DEFAULT_API_BASE_URL = "https://api.perfext.app";
-
 /** An authenticated session, as returned by the API's auth routes. */
 export interface Session {
   accessToken: string;
@@ -40,9 +32,6 @@ export interface Settings {
   // ---- Account ----
   session: Session | null;
 
-  /** Base URL of the Perfext API. Defaults to prod. */
-  apiBaseUrl: string;
-
   /** How long to wait after the user stops typing before analyzing, in ms. */
   debounceMs: number;
 }
@@ -56,7 +45,6 @@ export const DEFAULT_SETTINGS: Settings = {
   serverProvider: "openai",
   serverModel: "",
   session: null,
-  apiBaseUrl: DEFAULT_API_BASE_URL,
   debounceMs: 5000,
 };
 

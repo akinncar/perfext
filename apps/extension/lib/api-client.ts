@@ -1,10 +1,6 @@
+import { API_BASE_URL } from "./config";
 import { encryptWithPublicKey } from "./crypto";
-import {
-  Issue,
-  ProvidersResponse,
-  Session,
-  Settings,
-} from "./types";
+import { Issue, ProvidersResponse, Session, Settings } from "./types";
 
 /**
  * Typed client for the Perfext API. The extension holds no AI logic — it only
@@ -21,10 +17,6 @@ export class ApiClientError extends Error {
     this.status = status;
     this.code = code;
   }
-}
-
-function base(settings: Pick<Settings, "apiBaseUrl">): string {
-  return settings.apiBaseUrl.replace(/\/+$/, "");
 }
 
 async function request<T>(
@@ -70,33 +62,33 @@ function safeJson(text: string): unknown {
 
 // ---- Auth ----
 
-export function signup(settings: Settings, email: string, password: string): Promise<Session> {
-  return request<{ session: Session }>(`${base(settings)}/v1/auth/signup`, {
+export function signup(email: string, password: string): Promise<Session> {
+  return request<{ session: Session }>(`${API_BASE_URL}/v1/auth/signup`, {
     method: "POST",
     body: JSON.stringify({ email, password }),
   }).then((r) => r.session);
 }
 
-export function login(settings: Settings, email: string, password: string): Promise<Session> {
-  return request<{ session: Session }>(`${base(settings)}/v1/auth/login`, {
+export function login(email: string, password: string): Promise<Session> {
+  return request<{ session: Session }>(`${API_BASE_URL}/v1/auth/login`, {
     method: "POST",
     body: JSON.stringify({ email, password }),
   }).then((r) => r.session);
 }
 
-export function refresh(settings: Settings, refreshToken: string): Promise<Session> {
-  return request<{ session: Session }>(`${base(settings)}/v1/auth/refresh`, {
+export function refresh(refreshToken: string): Promise<Session> {
+  return request<{ session: Session }>(`${API_BASE_URL}/v1/auth/refresh`, {
     method: "POST",
     body: JSON.stringify({ refresh_token: refreshToken }),
   }).then((r) => r.session);
 }
 
-export async function logout(settings: Settings): Promise<void> {
-  if (!settings.session) return;
+export async function logout(session: Session | null): Promise<void> {
+  if (!session) return;
   try {
-    await request(`${base(settings)}/v1/auth/logout`, {
+    await request(`${API_BASE_URL}/v1/auth/logout`, {
       method: "POST",
-      accessToken: settings.session.accessToken,
+      accessToken: session.accessToken,
       body: JSON.stringify({}),
     });
   } catch {
@@ -106,26 +98,25 @@ export async function logout(settings: Settings): Promise<void> {
 
 // ---- Providers ----
 
-export function fetchProviders(settings: Settings): Promise<ProvidersResponse> {
-  return request<ProvidersResponse>(`${base(settings)}/v1/providers`, { method: "GET" });
+export function fetchProviders(): Promise<ProvidersResponse> {
+  return request<ProvidersResponse>(`${API_BASE_URL}/v1/providers`, { method: "GET" });
 }
 
-// ---- Public key (cached per base URL) ----
+// ---- Public key (cached) ----
 
-const publicKeyCache = new Map<string, Promise<string>>();
+let publicKeyPromise: Promise<string> | null = null;
 
-function getPublicKey(settings: Settings): Promise<string> {
-  const url = `${base(settings)}/v1/public-key`;
-  const cached = publicKeyCache.get(url);
-  if (cached) return cached;
-  const promise = request<{ publicKey: string }>(url, { method: "GET" })
+function getPublicKey(): Promise<string> {
+  if (publicKeyPromise) return publicKeyPromise;
+  publicKeyPromise = request<{ publicKey: string }>(`${API_BASE_URL}/v1/public-key`, {
+    method: "GET",
+  })
     .then((r) => r.publicKey)
     .catch((err) => {
-      publicKeyCache.delete(url); // don't cache failures
+      publicKeyPromise = null; // don't cache failures
       throw err;
     });
-  publicKeyCache.set(url, promise);
-  return promise;
+  return publicKeyPromise;
 }
 
 // ---- Analyze ----
@@ -166,7 +157,7 @@ export async function analyze(
     if (!settings.apiKey.trim()) {
       throw new ApiClientError(400, "missing_key", "Add your API key in the Perfext settings.");
     }
-    const publicKey = await getPublicKey(settings);
+    const publicKey = await getPublicKey();
     body = {
       text,
       mode: "byok",
@@ -176,7 +167,7 @@ export async function analyze(
     };
   }
 
-  const res = await request<{ issues: Issue[] }>(`${base(settings)}/v1/analyze`, {
+  const res = await request<{ issues: Issue[] }>(`${API_BASE_URL}/v1/analyze`, {
     method: "POST",
     accessToken,
     body: JSON.stringify(body),

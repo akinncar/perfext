@@ -24,7 +24,7 @@ export function AccountForm({ settings, onChange }: AccountFormProps) {
   const session = settings.session;
 
   async function onSignOut() {
-    await logout(settings);
+    await logout(settings.session);
     onChange({ ...settings, session: null });
   }
 
@@ -34,8 +34,8 @@ export function AccountForm({ settings, onChange }: AccountFormProps) {
     try {
       const next =
         mode === "signup"
-          ? await signup(settings, email.trim(), password)
-          : await login(settings, email.trim(), password);
+          ? await signup(email.trim(), password)
+          : await login(email.trim(), password);
       onChange({ ...settings, session: next });
       setEmail("");
       setPassword("");

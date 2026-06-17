@@ -19,7 +19,7 @@ export function ServerFields({ settings, onChange }: ServerFieldsProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchProviders(settings)
+    fetchProviders()
       .then((res) => {
         if (cancelled) return;
         setProviders(res.providers);
@@ -48,9 +48,9 @@ export function ServerFields({ settings, onChange }: ServerFieldsProps) {
     return () => {
       cancelled = true;
     };
-    // Re-fetch only if the API base changes.
+    // Fetch once on mount; the API base is fixed at build time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.apiBaseUrl]);
+  }, []);
 
   if (error) return <p className="hint">{error}</p>;
   if (!providers) return <p className="hint">Loading providers…</p>;

@@ -22,8 +22,8 @@ export default defineConfig({
       "AI-powered writing suggestions as you type, with Perfext AI or your own key.",
     permissions: ["storage", "activeTab"],
     // The background worker talks only to the Perfext API now (not providers
-    // directly). Update this list if you point the extension at a different
-    // API origin via the setup page's base-URL setting.
+    // directly). The base URL is chosen at build time (see lib/config.ts):
+    // localhost in dev, prod otherwise — so both origins are allowed here.
     host_permissions: [
       "https://api.perfext.app/*",
       "http://localhost:8787/*",

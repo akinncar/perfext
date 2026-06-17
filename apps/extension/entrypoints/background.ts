@@ -56,7 +56,7 @@ async function runAnalyze(settings: Settings, text: string): Promise<Issue[]> {
     const expired = err instanceof ApiClientError && err.status === 401;
     if (!expired || !session?.refreshToken) throw err;
 
-    const next = await refresh(settings, session.refreshToken);
+    const next = await refresh(session.refreshToken);
     await saveSettings({ ...settings, session: next });
     return analyze(settings, text, next.accessToken);
   }
