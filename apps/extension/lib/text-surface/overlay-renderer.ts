@@ -76,6 +76,8 @@ export class OverlayRenderer {
         // so underlines for scrolled-away text don't bleed outside.
         const clipped = intersect(rect, fieldRect);
         if (!clipped) continue;
+        // Viewport culling: skip marks scrolled out of view entirely.
+        if (!inViewport(clipped)) continue;
         this.container.appendChild(this.makeMark(enriched, isDenied, clipped));
       }
     }
@@ -139,4 +141,14 @@ function intersect(rect: DOMRect, field: DOMRect): Box | null {
   const bottom = Math.min(rect.bottom, field.bottom);
   if (right <= left || bottom <= top) return null;
   return { left, top, width: right - left, height: bottom - top };
+}
+
+/** Whether a box overlaps the visible viewport at all. */
+function inViewport(box: Box): boolean {
+  return (
+    box.left < window.innerWidth &&
+    box.top < window.innerHeight &&
+    box.left + box.width > 0 &&
+    box.top + box.height > 0
+  );
 }
