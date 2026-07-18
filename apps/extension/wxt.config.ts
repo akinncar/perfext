@@ -25,7 +25,7 @@ export default defineConfig({
     // directly). The base URL is chosen at build time (see lib/config.ts):
     // localhost in dev, prod otherwise — so both origins are allowed here.
     host_permissions: [
-      "https://api.perfext.app/*",
+      "https://api.perfext.ai/*",
       "http://localhost:8787/*",
     ],
     action: {

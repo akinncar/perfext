@@ -5,5 +5,5 @@
  * `wxt.config.ts` `host_permissions`.
  */
 export const API_BASE_URL = (
-  import.meta.env.DEV ? "http://localhost:8787" : "https://api.perfext.app"
+  import.meta.env.DEV ? "http://localhost:8787" : "https://api.perfext.ai"
 ).replace(/\/+$/, "");
