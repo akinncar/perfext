@@ -97,7 +97,7 @@ function Setup({
         settings={settings}
         onChange={onChange}
         loggedIn={loggedIn}
-        onRequestAuth={() => chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") })}
+        onRequestAuth={() => chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") + "#account" })}
       />
 
       {!hostedLockedOut && (

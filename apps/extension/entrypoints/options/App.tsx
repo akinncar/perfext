@@ -6,8 +6,7 @@ import { AuthView } from "@/lib/views/AuthView";
 import { PlansView } from "@/lib/views/PlansView";
 import { SourceSettings } from "@/lib/views/SourceSettings";
 import { Session } from "@/lib/types";
-
-type Menu = "source" | "account" | "plans";
+import { Menu, menuFromHash } from "@/lib/options-menu";
 
 const MENU: Array<{ id: Menu; label: string }> = [
   { id: "source", label: "AI source" },
@@ -17,7 +16,7 @@ const MENU: Array<{ id: Menu; label: string }> = [
 
 export function App() {
   const { settings, setSettings, save, loaded } = useSettings();
-  const [menu, setMenu] = useState<Menu>("source");
+  const [menu, setMenu] = useState<Menu>(() => menuFromHash(location.hash));
   const [status, setStatus] = useState("");
 
   const loggedIn = !!settings.session?.user;
