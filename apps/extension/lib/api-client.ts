@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { encryptWithPublicKey } from "./crypto";
-import { Issue, Session, Settings } from "./types";
+import { Issue, Me, Session, Settings } from "./types";
 
 /**
  * Typed client for the Perfext API. The extension holds no AI logic — it only
@@ -94,6 +94,26 @@ export async function logout(session: Session | null): Promise<void> {
   } catch {
     // Logging out locally is what matters; ignore server-side failures.
   }
+}
+
+// ---- Me (profile) ----
+
+export function getMe(accessToken: string): Promise<Me> {
+  return request<{ user: Me }>(`${API_BASE_URL}/v1/me`, {
+    method: "GET",
+    accessToken,
+  }).then((r) => r.user);
+}
+
+export function updateDisplayName(
+  accessToken: string,
+  displayName: string,
+): Promise<Me> {
+  return request<{ user: Me }>(`${API_BASE_URL}/v1/me`, {
+    method: "PATCH",
+    accessToken,
+    body: JSON.stringify({ displayName }),
+  }).then((r) => r.user);
 }
 
 // ---- Public key (cached) ----

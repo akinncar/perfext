@@ -12,6 +12,13 @@ export interface Session {
   user: { id: string; email: string | null } | null;
 }
 
+/** The current user's profile, as returned by GET/PATCH /v1/me. */
+export interface Me {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+}
+
 export interface Settings {
   enabled: boolean;
   /** Which usage mode the extension uses for analysis. */
