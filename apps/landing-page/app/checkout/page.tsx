@@ -54,7 +54,7 @@ function CheckoutForm() {
         <input
           type="password"
           required
-          minLength={8}
+          minLength={mode === "signup" ? 8 : undefined}
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
