@@ -78,7 +78,7 @@ export function PlansView({
     setError("");
     try {
       const url = await createCheckout(accessToken, plan.id, interval);
-      window.open(url, "_blank", "noreferrer");
+      chrome.tabs.create({ url });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Checkout failed. Try again.");
     } finally {
@@ -92,7 +92,7 @@ export function PlansView({
     setError("");
     try {
       const url = await createPortal(accessToken);
-      window.open(url, "_blank", "noreferrer");
+      chrome.tabs.create({ url });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Couldn't open billing. Try again.");
     } finally {
