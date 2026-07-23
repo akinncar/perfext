@@ -22,6 +22,11 @@ function CheckoutForm() {
     try {
       const session =
         mode === "login" ? await login(email, password) : await signup(email, password);
+      if (!session.accessToken) {
+        throw new Error(
+          "Almost there — confirm your email from the message we sent you, then sign in here to continue.",
+        );
+      }
       const url = await createCheckout(session.accessToken, planId, interval);
       window.location.assign(url);
     } catch (err) {
