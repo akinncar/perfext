@@ -54,7 +54,17 @@ export function PlansView({
       setAccount(null);
       return;
     }
-    getAccount(accessToken).then(setAccount).catch(() => setAccount(null));
+    let cancelled = false;
+    getAccount(accessToken)
+      .then((a) => {
+        if (!cancelled) setAccount(a);
+      })
+      .catch(() => {
+        if (!cancelled) setAccount(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [accessToken]);
 
   const currentPlanId = account?.plan?.id ?? (session ? "free" : null);
@@ -119,13 +129,13 @@ export function PlansView({
 
       <div className="plan-toggle">
         <button
-          className={interval === "monthly" ? "seg active" : "seg"}
+          className={interval === "monthly" ? "plan-seg active" : "plan-seg"}
           onClick={() => setInterval("monthly")}
         >
           Monthly
         </button>
         <button
-          className={interval === "yearly" ? "seg active" : "seg"}
+          className={interval === "yearly" ? "plan-seg active" : "plan-seg"}
           onClick={() => setInterval("yearly")}
         >
           Yearly
