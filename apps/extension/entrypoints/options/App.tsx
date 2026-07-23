@@ -54,7 +54,6 @@ export function App() {
               onClick={() => setMenu(m.id)}
             >
               {m.label}
-              {m.id === "plans" && <span className="badge sm">soon</span>}
             </button>
           ))}
         </nav>
@@ -119,7 +118,10 @@ export function App() {
 
         {menu === "plans" && (
           <div className="panel">
-            <PlansView />
+            <PlansView
+              session={settings.session}
+              onRequestAuth={() => setMenu("account")}
+            />
           </div>
         )}
       </section>
