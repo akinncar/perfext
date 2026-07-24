@@ -163,27 +163,27 @@ export function Pricing() {
                 </p>
               )}
 
-              <ul className="mt-6 flex flex-col gap-3 text-sm leading-6 text-muted">
+              <ul className="mb-8 mt-6 flex flex-col gap-3 text-sm leading-6 text-muted">
                 {bullets.map((bullet) => (
                   <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
 
               {plan.id === "free" ? (
-                <a href="#download" className={`${secondaryCta} mt-8`}>
+                <a href="#download" className={secondaryCta}>
                   Get the extension
                 </a>
               ) : plan.id === "custom" ? (
                 <a
                   href="mailto:sales@perfext.ai"
-                  className={`${secondaryCta} mt-8`}
+                  className={secondaryCta}
                 >
                   Email us
                 </a>
               ) : (
                 <a
                   href={`/checkout?plan=${plan.id}&interval=${interval}`}
-                  className={`${primaryCta} mt-8`}
+                  className={primaryCta}
                 >
                   Get {plan.name}
                 </a>
