@@ -1,4 +1,5 @@
 import { analyze, ApiClientError, refresh } from "@/lib/api-client";
+import { clearPlanNotice, savePlanNotice } from "@/lib/plan-notice";
 import { loadSettings, saveSettings } from "@/lib/settings";
 import { AnalyzeRequest, AnalyzeResponse, Issue, Settings } from "@/lib/types";
 
@@ -25,8 +26,17 @@ export default defineBackground(() => {
             return;
           }
           const issues = await runAnalyze(settings, message.text);
+          if (settings.mode === "server") {
+            clearPlanNotice().catch(() => {});
+          }
           sendResponse({ ok: true, issues } satisfies AnalyzeResponse);
         } catch (err) {
+          if (
+            err instanceof ApiClientError &&
+            (err.code === "plan_required" || err.code === "quota_exceeded")
+          ) {
+            savePlanNotice({ code: err.code, message: err.message }).catch(() => {});
+          }
           sendResponse({
             ok: false,
             error: err instanceof Error ? err.message : String(err),

@@ -12,6 +12,13 @@ export interface Session {
   user: { id: string; email: string | null } | null;
 }
 
+/** The current user's profile, as returned by GET/PATCH /v1/me. */
+export interface Me {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+}
+
 export interface Settings {
   enabled: boolean;
   /** Which usage mode the extension uses for analysis. */
@@ -83,6 +90,36 @@ export interface Issue {
   start: number;
   /** Character offset where `text` ends (exclusive). */
   end: number;
+}
+
+// ---- Billing & Plans ----
+
+export interface PlanPrice {
+  amount: number;
+  currency: string;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  features: string[];
+  prices: { monthly?: PlanPrice; yearly?: PlanPrice } | null;
+  limits: { tokensPerMonth: number; tokensPerDay: number } | null;
+  contactEmail?: string;
+}
+
+export interface PlanUsage {
+  tokensUsedToday: number;
+  tokensPerDay: number;
+  tokensUsedThisPeriod: number;
+  tokensPerMonth: number;
+  periodEnd: string | null;
+}
+
+export interface Account {
+  user: Me;
+  plan: { id: string; name: string; status: string } | null;
+  usage: PlanUsage | null;
 }
 
 // ---- Messaging between content script and background worker ----

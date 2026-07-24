@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { encryptWithPublicKey } from "./crypto";
-import { Issue, Session, Settings } from "./types";
+import { Account, Issue, Me, Plan, Session, Settings } from "./types";
 
 /**
  * Typed client for the Perfext API. The extension holds no AI logic — it only
@@ -96,6 +96,26 @@ export async function logout(session: Session | null): Promise<void> {
   }
 }
 
+// ---- Me (profile) ----
+
+export function getMe(accessToken: string): Promise<Me> {
+  return request<{ user: Me }>(`${API_BASE_URL}/v1/me`, {
+    method: "GET",
+    accessToken,
+  }).then((r) => r.user);
+}
+
+export function updateDisplayName(
+  accessToken: string,
+  displayName: string,
+): Promise<Me> {
+  return request<{ user: Me }>(`${API_BASE_URL}/v1/me`, {
+    method: "PATCH",
+    accessToken,
+    body: JSON.stringify({ displayName }),
+  }).then((r) => r.user);
+}
+
 // ---- Public key (cached) ----
 
 let publicKeyPromise: Promise<string> | null = null;
@@ -189,4 +209,36 @@ export async function verify(settings: Settings): Promise<VerifyResult> {
       error: err instanceof ApiClientError ? err.message : "Couldn't verify your setup.",
     };
   }
+}
+
+// ---- Billing ----
+
+export function getPlans(): Promise<Plan[]> {
+  return request<{ plans: Plan[] }>(`${API_BASE_URL}/v1/plans`, { method: "GET" }).then(
+    (r) => r.plans,
+  );
+}
+
+export function getAccount(accessToken: string): Promise<Account> {
+  return request<Account>(`${API_BASE_URL}/v1/me`, { method: "GET", accessToken });
+}
+
+export function createCheckout(
+  accessToken: string,
+  planId: string,
+  interval: "monthly" | "yearly",
+): Promise<string> {
+  return request<{ url: string }>(`${API_BASE_URL}/v1/billing/checkout`, {
+    method: "POST",
+    accessToken,
+    body: JSON.stringify({ planId, interval }),
+  }).then((r) => r.url);
+}
+
+export function createPortal(accessToken: string): Promise<string> {
+  return request<{ url: string }>(`${API_BASE_URL}/v1/billing/portal`, {
+    method: "POST",
+    accessToken,
+    body: JSON.stringify({}),
+  }).then((r) => r.url);
 }

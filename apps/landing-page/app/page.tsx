@@ -1,5 +1,6 @@
 import { CHROME_STORE_URL, LATEST_RELEASE_URL } from "@/lib/links";
 import { ChromeIcon, DownloadIcon } from "@/components/Icons";
+import { Pricing } from "@/components/Pricing";
 
 const steps = [
   {
@@ -154,35 +155,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="mx-auto max-w-5xl px-6 pb-24">
-        <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight">
-          Pricing
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="flex flex-col rounded-xl border border-border bg-surface p-8">
-            <h3 className="text-lg font-medium text-white">Free</h3>
-            <p className="mt-4 text-4xl font-semibold tracking-tight text-white">
-              $0
-            </p>
-            <ul className="mt-6 flex flex-col gap-3 text-sm leading-6 text-muted">
-              <li>Use your own API key</li>
-              <li>Limited requests</li>
-            </ul>
-          </div>
-          <div className="flex flex-col rounded-xl border border-border bg-surface p-8">
-            <h3 className="text-lg font-medium text-white">Coming soon</h3>
-            <p className="mt-4 text-4xl font-semibold tracking-tight text-white">
-              Pro
-            </p>
-            <ul className="mt-6 flex flex-col gap-3 text-sm leading-6 text-muted">
-              <li>Trained AI</li>
-              <li>Multiple languages</li>
-              <li>More resources for your translations</li>
-            </ul>
-          </div>
-        </div>
-      </section>
+      <Pricing />
 
       {/* Download CTA */}
       <section

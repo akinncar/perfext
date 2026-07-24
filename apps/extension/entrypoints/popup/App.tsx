@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { logout } from "@/lib/api-client";
+import { clearPlanNotice, loadPlanNotice, onPlanNoticeChanged, PlanNotice } from "@/lib/plan-notice";
 import { useSettings } from "@/lib/useSettings";
 import { AuthView } from "@/lib/views/AuthView";
 import { SourceSettings } from "@/lib/views/SourceSettings";
@@ -11,12 +12,18 @@ export function App() {
   const { settings, setSettings, save, loaded } = useSettings();
   const [view, setView] = useState<View>("main");
   const [status, setStatus] = useState("");
+  const [planNotice, setPlanNotice] = useState<PlanNotice | null>(null);
 
   const loggedIn = !!settings.session?.user;
 
-  function openSettings() {
+  useEffect(() => {
+    loadPlanNotice().then(setPlanNotice);
+    return onPlanNoticeChanged(setPlanNotice);
+  }, []);
+
+  function openSettings(hash = "") {
     // Open the full settings page in a tab (room for the sidebar menu).
-    chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("/options.html") + hash });
   }
 
   function onToggleEnabled(enabled: boolean) {
@@ -57,12 +64,36 @@ export function App() {
             className="icon-btn"
             title="Settings"
             aria-label="Open settings"
-            onClick={openSettings}
+            onClick={() => openSettings()}
           >
             ⚙
           </button>
         </div>
       </div>
+
+      {planNotice && (
+        <div className="plan-notice">
+          <p>{planNotice.message}</p>
+          <div className="plan-notice-actions">
+            <button
+              className="plan-notice-cta"
+              onClick={() => {
+                clearPlanNotice();
+                openSettings("#plans");
+              }}
+            >
+              View plans
+            </button>
+            <button
+              className="plan-notice-dismiss"
+              aria-label="Dismiss"
+              onClick={() => clearPlanNotice()}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {view === "auth" ? (
         <AuthView onAuthenticated={onAuthenticated} onBack={() => setView("main")} />
