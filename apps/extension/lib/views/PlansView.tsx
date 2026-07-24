@@ -13,7 +13,6 @@ import "../settings-form.css";
 const PLAN_COPY: Record<string, string[]> = {
   free: ["Bring your own API key", "No account needed"],
   pro: ["Perfext AI included", "Everyday writing allowance"],
-  advanced: ["Perfext AI included", "High-volume allowance"],
   custom: ["Tailored limits and features", "Priority support"],
 };
 

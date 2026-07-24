@@ -18,18 +18,8 @@ const FALLBACK_PLANS: Plan[] = [
     name: "Pro",
     features: [],
     prices: {
-      monthly: { amount: 2990, currency: "usd" },
-      yearly: { amount: 17880, currency: "usd" },
-    },
-    limits: null,
-  },
-  {
-    id: "advanced",
-    name: "Advanced",
-    features: [],
-    prices: {
-      monthly: { amount: 9990, currency: "usd" },
-      yearly: { amount: 83880, currency: "usd" },
+      monthly: { amount: 1190, currency: "usd" },
+      yearly: { amount: 14280, currency: "usd" },
     },
     limits: null,
   },
@@ -47,7 +37,6 @@ const FALLBACK_PLANS: Plan[] = [
 const PLAN_BULLETS: Record<string, string[]> = {
   free: ["Use your own API key", "No account needed"],
   pro: ["Perfext AI included", "Everyday writing allowance"],
-  advanced: ["Perfext AI included", "High-volume allowance"],
   custom: ["Tailored limits & features", "Priority support"],
 };
 
@@ -111,7 +100,7 @@ export function Pricing() {
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => {
           const price = plan.prices?.[interval];
           const savePercent =
