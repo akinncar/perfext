@@ -19,17 +19,7 @@ const FALLBACK_PLANS: Plan[] = [
     features: [],
     prices: {
       monthly: { amount: 2990, currency: "usd" },
-      yearly: { amount: 17880, currency: "usd" },
-    },
-    limits: null,
-  },
-  {
-    id: "advanced",
-    name: "Advanced",
-    features: [],
-    prices: {
-      monthly: { amount: 9990, currency: "usd" },
-      yearly: { amount: 83880, currency: "usd" },
+      yearly: { amount: 14280, currency: "usd" },
     },
     limits: null,
   },
@@ -69,7 +59,9 @@ function yearlySavingsPercent(plan: Plan): number | null {
 }
 
 export function Pricing() {
-  const [plans, setPlans] = useState<Plan[]>(FALLBACK_PLANS);
+  // null until the API answers, so we never flash a stale price. FALLBACK_PLANS
+  // is only for the API being unreachable.
+  const [plans, setPlans] = useState<Plan[] | null>(null);
   const [interval, setInterval] = useState<Interval>("yearly");
 
   useEffect(() => {
@@ -111,8 +103,16 @@ export function Pricing() {
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {plans.map((plan) => {
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {plans === null
+          ? [0, 1, 2].map((i) => (
+              <div
+                key={i}
+                aria-hidden
+                className="min-h-[26rem] animate-pulse rounded-xl border border-border bg-surface"
+              />
+            ))
+          : plans.map((plan) => {
           const price = plan.prices?.[interval];
           const savePercent =
             interval === "yearly" ? yearlySavingsPercent(plan) : null;
