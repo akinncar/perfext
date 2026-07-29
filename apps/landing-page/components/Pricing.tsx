@@ -18,7 +18,7 @@ const FALLBACK_PLANS: Plan[] = [
     name: "Pro",
     features: [],
     prices: {
-      monthly: { amount: 2990, currency: "usd" },
+      monthly: { amount: 1990, currency: "usd" },
       yearly: { amount: 14280, currency: "usd" },
     },
     limits: null,
