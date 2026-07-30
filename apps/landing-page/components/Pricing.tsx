@@ -135,24 +135,17 @@ export function Pricing() {
               </div>
 
               {price ? (
-                <>
-                  <p className="mt-4 text-4xl font-semibold tracking-tight text-white">
-                    $
-                    {formatMoney(
-                      interval === "yearly"
-                        ? price.amount / 12 / 100
-                        : price.amount / 100
-                    )}
-                    <span className="text-base font-normal text-muted">
-                      /mo
-                    </span>
-                  </p>
-                  {interval === "yearly" && (
-                    <p className="mt-1 text-sm text-muted">
-                      billed ${formatMoney(price.amount / 100)}/yr
-                    </p>
+                <p className="mt-4 text-4xl font-semibold tracking-tight text-white">
+                  $
+                  {formatMoney(
+                    interval === "yearly"
+                      ? price.amount / 12 / 100
+                      : price.amount / 100
                   )}
-                </>
+                  <span className="text-base font-normal text-muted">
+                    /mo
+                  </span>
+                </p>
               ) : plan.contactEmail ? (
                 <p className="mt-4 text-4xl font-semibold tracking-tight text-white">
                   Let&apos;s talk

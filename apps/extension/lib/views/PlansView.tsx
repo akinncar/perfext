@@ -166,9 +166,6 @@ export function PlansView({
               </div>
               <p className="plan-price">
                 {plan.contactEmail ? "Let's talk" : perMonth ? `${perMonth}/mo` : "$0"}
-                {price && interval === "yearly" && (
-                  <span className="hint"> billed {formatPrice(price.amount)}/yr</span>
-                )}
               </p>
               <ul className="plan-features">
                 {(PLAN_COPY[plan.id] ?? plan.features).map((f) => (
