@@ -1,4 +1,9 @@
-import { DEFAULT_SETTINGS, PERFEXT_MODEL, Settings } from "./types";
+import {
+  DEFAULT_SETTINGS,
+  MIN_DEBOUNCE_MS,
+  PERFEXT_MODEL,
+  Settings,
+} from "./types";
 
 const KEY = "perfext:settings";
 
@@ -16,6 +21,7 @@ export function migrateStoredSettings(stored: unknown): Settings {
     settings.provider = "perfext";
     settings.model = PERFEXT_MODEL;
   }
+  settings.debounceMs = Math.max(settings.debounceMs, MIN_DEBOUNCE_MS);
   return settings;
 }
 

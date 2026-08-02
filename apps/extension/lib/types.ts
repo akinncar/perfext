@@ -39,6 +39,20 @@ export function isHosted(settings: Pick<Settings, "provider">): boolean {
   return settings.provider === "perfext";
 }
 
+/** Minimum wait after typing stops, for every provider. */
+export const MIN_DEBOUNCE_MS = 5000;
+
+/**
+ * The debounce to actually use: Perfext AI is not configurable and always
+ * waits 5s; BYOK providers honor the stored value, clamped to the minimum.
+ */
+export function effectiveDebounceMs(
+  settings: Pick<Settings, "provider" | "debounceMs">,
+): number {
+  if (isHosted(settings)) return MIN_DEBOUNCE_MS;
+  return Math.max(settings.debounceMs, MIN_DEBOUNCE_MS);
+}
+
 export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
   // Perfext is locked until login, so new installs default to BYOK.

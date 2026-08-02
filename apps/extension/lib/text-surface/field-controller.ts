@@ -1,6 +1,7 @@
 import {
   AnalyzeRequest,
   AnalyzeResponse,
+  effectiveDebounceMs,
   Issue,
   Settings,
 } from "../types";
@@ -66,7 +67,7 @@ export class FieldController {
 
     this.debounceTimer = window.setTimeout(
       () => this.runAnalyze(),
-      settings.debounceMs,
+      effectiveDebounceMs(settings),
     );
   }
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { migrateStoredSettings } from "./settings";
-import { DEFAULT_SETTINGS } from "./types";
+import {
+  DEFAULT_SETTINGS,
+  effectiveDebounceMs,
+  MIN_DEBOUNCE_MS,
+} from "./types";
 
 describe("migrateStoredSettings", () => {
   it("maps legacy mode:\"server\" to the perfext provider", () => {
@@ -51,5 +55,30 @@ describe("migrateStoredSettings", () => {
     expect(settings.enabled).toBe(false);
     expect(settings.apiKey).toBe("sk-old");
     expect(settings.debounceMs).toBe(8000);
+  });
+
+  it("raises a stored debounce below the minimum to 5s", () => {
+    const settings = migrateStoredSettings({ debounceMs: 2000 });
+    expect(settings.debounceMs).toBe(MIN_DEBOUNCE_MS);
+  });
+});
+
+describe("effectiveDebounceMs", () => {
+  it("is always 5s for the hosted Perfext provider", () => {
+    expect(
+      effectiveDebounceMs({ provider: "perfext", debounceMs: 12000 }),
+    ).toBe(MIN_DEBOUNCE_MS);
+  });
+
+  it("honors the stored value for BYOK providers", () => {
+    expect(effectiveDebounceMs({ provider: "openai", debounceMs: 8000 })).toBe(
+      8000,
+    );
+  });
+
+  it("clamps BYOK values below the minimum to 5s", () => {
+    expect(
+      effectiveDebounceMs({ provider: "anthropic", debounceMs: 2000 }),
+    ).toBe(MIN_DEBOUNCE_MS);
   });
 });

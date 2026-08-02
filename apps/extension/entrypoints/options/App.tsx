@@ -5,7 +5,7 @@ import { AccountPanel } from "@/lib/views/AccountPanel";
 import { AuthView } from "@/lib/views/AuthView";
 import { PlansView } from "@/lib/views/PlansView";
 import { SourceSettings } from "@/lib/views/SourceSettings";
-import { Session } from "@/lib/types";
+import { isHosted, MIN_DEBOUNCE_MS, Session } from "@/lib/types";
 import { Menu, menuFromHash } from "@/lib/options-menu";
 
 const MENU: Array<{ id: Menu; label: string }> = [
@@ -81,22 +81,36 @@ export function App() {
               onRequestAuth={() => setMenu("account")}
             />
 
-            <div className="field" style={{ marginTop: 18 }}>
-              <label>
-                Wait before checking ({(settings.debounceMs / 1000).toFixed(0)}s)
-              </label>
-              <input
-                type="range"
-                min={2000}
-                max={15000}
-                step={1000}
-                value={settings.debounceMs}
-                onChange={(e) => {
-                  setSettings({ ...settings, debounceMs: Number(e.target.value) });
-                  setStatus("");
-                }}
-              />
-            </div>
+            {isHosted(settings) ? (
+              <div className="field" style={{ marginTop: 18 }}>
+                <label>
+                  Wait before checking ({(MIN_DEBOUNCE_MS / 1000).toFixed(0)}s)
+                </label>
+                <p className="hint">
+                  Perfext AI always checks {MIN_DEBOUNCE_MS / 1000} seconds
+                  after you stop typing.
+                </p>
+              </div>
+            ) : (
+              <div className="field" style={{ marginTop: 18 }}>
+                <label>
+                  Wait before checking (
+                  {(Math.max(settings.debounceMs, MIN_DEBOUNCE_MS) / 1000).toFixed(0)}
+                  s)
+                </label>
+                <input
+                  type="range"
+                  min={MIN_DEBOUNCE_MS}
+                  max={15000}
+                  step={1000}
+                  value={Math.max(settings.debounceMs, MIN_DEBOUNCE_MS)}
+                  onChange={(e) => {
+                    setSettings({ ...settings, debounceMs: Number(e.target.value) });
+                    setStatus("");
+                  }}
+                />
+              </div>
+            )}
 
             <button className="save" onClick={onSave}>
               Save
