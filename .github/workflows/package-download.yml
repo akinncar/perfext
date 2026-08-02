@@ -60,5 +60,8 @@ jobs:
           else
             git add apps/landing-page/public/perfext-extension.zip
             git commit -m "chore: refresh packaged extension for download [skip ci]"
+            # The release workflow may have pushed a version-bump commit to the
+            # branch meanwhile; rebase our zip commit on top before pushing.
+            git pull --rebase origin "${{ github.ref_name }}"
             git push origin HEAD:${{ github.ref_name }}
           fi
