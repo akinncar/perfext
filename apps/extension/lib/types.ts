@@ -1,9 +1,6 @@
-export type Provider = "openai" | "anthropic";
+export type Provider = "perfext" | "openai" | "anthropic";
 
 export type Severity = "red" | "yellow";
-
-/** How analysis is performed: the user's own key, or the server's. */
-export type Mode = "byok" | "server";
 
 /** An authenticated session, as returned by the API's auth routes. */
 export interface Session {
@@ -21,13 +18,10 @@ export interface Me {
 
 export interface Settings {
   enabled: boolean;
-  /** Which usage mode the extension uses for analysis. */
-  mode: Mode;
 
-  // ---- BYOK (bring your own key) ----
   provider: Provider;
   model: string;
-  /** The user's own provider key. Sent RSA-encrypted to the API, never stored server-side. */
+  /** The user's own provider key (BYOK only). Sent RSA-encrypted to the API, never stored server-side. */
   apiKey: string;
 
   // ---- Account ----
@@ -37,9 +31,17 @@ export interface Settings {
   debounceMs: number;
 }
 
+/**
+ * Whether analysis runs on Perfext's own hosted AI (vs the user's own key).
+ * This replaces the old stored `mode` field — mode is derived, never stored.
+ */
+export function isHosted(settings: Pick<Settings, "provider">): boolean {
+  return settings.provider === "perfext";
+}
+
 export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
-  mode: "byok",
+  // Perfext is locked until login, so new installs default to BYOK.
   provider: "openai",
   model: "gpt-4o-mini",
   apiKey: "",
@@ -50,13 +52,22 @@ export const DEFAULT_SETTINGS: Settings = {
 export interface ProviderInfo {
   label: string;
   models: string[];
+  /** Requires being logged in to a Perfext account instead of an API key. */
+  requiresAuth?: boolean;
   /** Where the user creates an API key for this provider. */
-  keyUrl: string;
+  keyUrl?: string;
   /** Placeholder showing the shape of this provider's keys. */
-  keyPlaceholder: string;
+  keyPlaceholder?: string;
 }
 
+export const PERFEXT_MODEL = "perfext-text-v1";
+
 export const MODELS: Record<Provider, ProviderInfo> = {
+  perfext: {
+    label: "Perfext",
+    models: [PERFEXT_MODEL],
+    requiresAuth: true,
+  },
   openai: {
     label: "OpenAI",
     models: ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"],

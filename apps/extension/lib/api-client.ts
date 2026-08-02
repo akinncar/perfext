@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { encryptWithPublicKey } from "./crypto";
-import { Account, Issue, Me, Plan, Session, Settings } from "./types";
+import { Account, isHosted, Issue, Me, Plan, Session, Settings } from "./types";
 
 /**
  * Typed client for the Perfext API. The extension holds no AI logic — it only
@@ -157,11 +157,12 @@ export async function analyze(
 ): Promise<Issue[]> {
   let body: AnalyzeBody;
 
-  if (settings.mode === "server") {
+  if (isHosted(settings)) {
     if (!accessToken) {
       throw new ApiClientError(401, "unauthorized", "Log in to use Perfext's server AI.");
     }
-    // Hosted AI is fully managed — the backend chooses provider + model.
+    // Hosted AI is fully managed — the backend chooses the real model, so the
+    // display model (perfext-text-v1) is never sent.
     body = { text, mode: "server" };
   } else {
     if (!settings.apiKey.trim()) {
@@ -194,7 +195,7 @@ export type VerifyResult = { ok: true } | { ok: false; error: string };
  */
 export async function verify(settings: Settings): Promise<VerifyResult> {
   try {
-    if (settings.mode === "server") {
+    if (isHosted(settings)) {
       if (!settings.session) {
         return { ok: false, error: "Log in to use Perfext's own AI." };
       }

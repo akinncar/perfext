@@ -1,7 +1,7 @@
 import { analyze, ApiClientError, refresh } from "@/lib/api-client";
 import { clearPlanNotice, savePlanNotice } from "@/lib/plan-notice";
 import { loadSettings, saveSettings } from "@/lib/settings";
-import { AnalyzeRequest, AnalyzeResponse, Issue, Settings } from "@/lib/types";
+import { AnalyzeRequest, AnalyzeResponse, isHosted, Issue, Settings } from "@/lib/types";
 
 export default defineBackground(() => {
   // On fresh install, open the welcome page so new users land directly on the
@@ -26,7 +26,7 @@ export default defineBackground(() => {
             return;
           }
           const issues = await runAnalyze(settings, message.text);
-          if (settings.mode === "server") {
+          if (isHosted(settings)) {
             clearPlanNotice().catch(() => {});
           }
           sendResponse({ ok: true, issues } satisfies AnalyzeResponse);
@@ -55,7 +55,7 @@ export default defineBackground(() => {
  * if the access token has expired (401), persisting the new session.
  */
 async function runAnalyze(settings: Settings, text: string): Promise<Issue[]> {
-  if (settings.mode !== "server") {
+  if (!isHosted(settings)) {
     return analyze(settings, text);
   }
 
