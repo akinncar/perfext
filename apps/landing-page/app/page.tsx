@@ -191,8 +191,11 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-sm text-muted">
-          © {new Date().getFullYear()} Perfext · Make Perfect Texts
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-8 text-sm text-muted">
+          <span>© {new Date().getFullYear()} Perfext · Make Perfect Texts</span>
+          <a href="/privacy" className="transition hover:text-white">
+            Privacy
+          </a>
         </div>
       </footer>
     </main>
