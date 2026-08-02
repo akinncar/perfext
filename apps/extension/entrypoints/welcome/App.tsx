@@ -52,7 +52,7 @@ export function App() {
       </header>
 
       {phase === "done" ? (
-        <Done onEdit={() => setPhase("form")} />
+        <Done />
       ) : (
         <Setup
           settings={settings}
@@ -125,7 +125,7 @@ function Setup({
   );
 }
 
-function Done({ onEdit }: { onEdit: () => void }) {
+function Done() {
   return (
     <section className="card">
       <h1>You&apos;re all set ✓</h1>
@@ -145,8 +145,8 @@ function Done({ onEdit }: { onEdit: () => void }) {
           Dismiss it.
         </li>
       </ol>
-      <button className="save" onClick={onEdit}>
-        Change settings
+      <button className="save" onClick={() => window.close()}>
+        Close Window
       </button>
     </section>
   );
