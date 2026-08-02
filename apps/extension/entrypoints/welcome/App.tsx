@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { verify } from "@/lib/api-client";
 import { loadSettings, saveSettings } from "@/lib/settings";
 import { SourceSettings } from "@/lib/views/SourceSettings";
-import { DEFAULT_SETTINGS, Settings } from "@/lib/types";
+import { DEFAULT_SETTINGS, isHosted, Settings } from "@/lib/types";
 
 type Phase = "loading" | "form" | "testing" | "done";
 
 function isConfigured(s: Settings): boolean {
-  return s.mode === "server" ? !!s.session?.user : !!s.apiKey.trim();
+  return isHosted(s) ? !!s.session?.user : !!s.apiKey.trim();
 }
 
 export function App() {
@@ -80,17 +80,18 @@ function Setup({
   error: string;
 }) {
   const loggedIn = !!settings.session?.user;
-  // Perfext AI needs an account: when logged out, the only action is to log in
-  // (offered inside SourceSettings), so there's nothing to test or save here.
-  const hostedLockedOut = settings.mode === "server" && !loggedIn;
+  // The Perfext provider needs an account: when logged out, the only action is
+  // to log in (offered inside SourceSettings), so there's nothing to test or
+  // save here.
+  const hostedLockedOut = isHosted(settings) && !loggedIn;
 
   return (
     <section className="card">
       <h1>Let&apos;s get you set up</h1>
       <p className="lead">
-        Choose how Perfext checks your writing: bring <strong>your own key</strong>{" "}
-        from OpenAI or Anthropic, or sign in to use <strong>Perfext AI</strong>.
-        We&apos;ll confirm it works before you go.
+        Pick the AI that checks your writing: sign in to use{" "}
+        <strong>Perfext</strong>, or bring <strong>your own key</strong> from
+        OpenAI or Anthropic. We&apos;ll confirm it works before you go.
       </p>
 
       <SourceSettings
