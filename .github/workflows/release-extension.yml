@@ -1,11 +1,20 @@
 name: Release extension
 
 # Publishes the extension to the Chrome Web Store on every merge to the default
-# branch — but ONLY when the version in apps/extension/package.json has been
-# bumped. Merges that don't change the version (docs, refactors, fixes that
-# aren't a release) are detected via the `extension-v<version>` git tag and skip
-# publishing. So: bump the version in the same PR you want released; leave it
-# untouched for everything else.
+# branch that touches the extension, auto-bumping the version through master:
+#
+#   - If the merge did NOT bump apps/extension/package.json itself, CI bumps the
+#     patch version, commits it back to the branch ([skip ci], GITHUB_TOKEN — so
+#     the auto-commit never re-triggers workflows), then publishes.
+#   - If the merge DID bump the version (detected via the missing
+#     `extension-v<version>` git tag), CI respects that version as-is — bump
+#     minor/major yourself in the PR when a release deserves it.
+#   - Put `[skip release]` in the merge commit message to skip publishing (and
+#     bumping) entirely.
+#
+# The bump commit is pushed BEFORE publishing: if publishing then fails, the
+# bumped version has no release tag yet, so the next extension merge retries
+# that same version instead of bumping past it.
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
@@ -14,8 +23,12 @@ name: Release extension
 on:
   push:
     branches: [main, master]
+    # Only extension changes are releases; docs/landing-page merges don't bump.
+    paths:
+      - "apps/extension/**"
+      - ".github/workflows/release-extension.yml"
 
-# Allow the workflow to push the release tag back to the repo.
+# Allow the workflow to push the bump commit and the release tag.
 permissions:
   contents: write
 
@@ -26,59 +39,76 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Whether publishing credentials are configured. Until the secrets are added
-    # (see docs/RELEASING.md), the workflow runs but never attempts to publish —
-    # so merging this infrastructure, or any merge before setup, is a safe no-op.
-    env:
-      HAS_CREDENTIALS: ${{ secrets.CHROME_EXTENSION_ID != '' && secrets.CHROME_REFRESH_TOKEN != '' }}
+    # [skip ci] guards against loops if the auto-commit somehow re-triggers;
+    # [skip release] is the manual escape hatch for extension changes you don't
+    # want to ship yet.
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[skip release]') }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # need tags to tell a release from a normal merge
+          fetch-depth: 0 # need tags to tell a manual bump from a normal merge
 
-      - name: Read extension version
-        id: ver
+      - name: Check publishing credentials
+        id: creds
+        # Until the secrets are added (see docs/RELEASING.md), the workflow runs
+        # but never bumps or publishes — so any merge before setup is a safe no-op.
+        env:
+          HAS_CREDENTIALS: ${{ secrets.CHROME_EXTENSION_ID != '' && secrets.CHROME_REFRESH_TOKEN != '' }}
         run: |
-          VERSION=$(node -p "require('./apps/extension/package.json').version")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=extension-v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Extension version: $VERSION"
-
-      - name: Decide whether to publish
-        id: check
-        run: |
+          echo "configured=${HAS_CREDENTIALS}" >> "$GITHUB_OUTPUT"
           if [ "${HAS_CREDENTIALS}" != "true" ]; then
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Chrome Web Store secrets are not configured yet — skipping publish. See docs/RELEASING.md."
-          elif git rev-parse "refs/tags/${{ steps.ver.outputs.tag }}" >/dev/null 2>&1; then
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Tag ${{ steps.ver.outputs.tag }} already exists — this merge is not a release. Skipping publish."
-          else
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::New version ${{ steps.ver.outputs.version }} — will publish to the Chrome Web Store."
+            echo "::notice::Chrome Web Store secrets are not configured yet — skipping bump and publish. See docs/RELEASING.md."
           fi
 
+      - name: Resolve release version (auto-bump if not bumped manually)
+        id: ver
+        if: steps.creds.outputs.configured == 'true'
+        run: |
+          VERSION=$(node -p "require('./apps/extension/package.json').version")
+          if git rev-parse "refs/tags/extension-v$VERSION" >/dev/null 2>&1; then
+            # Current version is already released → this merge didn't bump it.
+            # Auto-bump the patch version and push it back through the branch.
+            cd apps/extension
+            NEW_VERSION=$(npm version patch --no-git-tag-version)
+            NEW_VERSION=${NEW_VERSION#v}
+            cd ../..
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add apps/extension/package.json
+            git commit -m "chore(release): bump extension to v$NEW_VERSION [skip ci]"
+            # Another workflow (package-download) may have pushed to the branch
+            # meanwhile; rebase our bump commit on top before pushing.
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin HEAD:${{ github.ref_name }}
+            VERSION=$NEW_VERSION
+            echo "::notice::Auto-bumped extension to v$VERSION."
+          else
+            echo "::notice::Version $VERSION was bumped manually in this merge — releasing it as-is."
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=extension-v$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Install pnpm
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Setup Node
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build & zip extension
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         run: pnpm --filter @perfext/extension zip
 
       - name: Submit to Chrome Web Store
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         working-directory: apps/extension
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
@@ -93,7 +123,7 @@ jobs:
           pnpm dlx publish-browser-extension@4 --chrome-zip "$ZIP"
 
       - name: Tag the released version
-        if: steps.check.outputs.should_release == 'true'
+        if: steps.creds.outputs.configured == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

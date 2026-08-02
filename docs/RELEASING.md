@@ -1,8 +1,9 @@
 # Releasing the extension to the Chrome Web Store
 
-This repo auto-publishes the extension to the Chrome Web Store whenever a merge
-to the default branch (`main`) **bumps the version**. This doc covers the
-one-time setup you have to do by hand, and the day-to-day release flow.
+This repo auto-publishes the extension to the Chrome Web Store on every merge
+to the default branch (`main`) that **touches `apps/extension/`**, bumping the
+patch version automatically through the branch. This doc covers the one-time
+setup you have to do by hand, and the day-to-day release flow.
 
 - Build tooling: [WXT](https://wxt.dev) (`apps/extension`) — `wxt zip`
 - Publish tooling: [`publish-browser-extension`](https://www.npmjs.com/package/publish-browser-extension) (CLI `publish-extension`), run via `pnpm dlx`
@@ -12,19 +13,26 @@ one-time setup you have to do by hand, and the day-to-day release flow.
 
 ## TL;DR — how a release happens
 
-1. You bump `version` in `apps/extension/package.json` (e.g. `0.1.0` → `0.1.1`).
-2. You merge that to `main`.
-3. CI sees a version it hasn't released yet, builds the zip, uploads it to the
-   Chrome Web Store, and submits it for review.
+1. You merge any change under `apps/extension/` to `main`.
+2. CI auto-bumps the **patch** version in `apps/extension/package.json` (e.g.
+   `0.1.0` → `0.1.1`) and commits it back to `main` (`[skip ci]`).
+3. CI builds the zip, uploads it to the Chrome Web Store, and submits it for
+   review.
 4. CI tags the commit `extension-v0.1.1` so the same version is never published
    twice.
 
-Merges that **don't** change the version (docs, refactors, bug fixes you're not
-shipping yet) are detected via that tag and **skip publishing**. So the rule is
-simply: _bump the version in the PR you want released; leave it alone otherwise._
+Variations:
+
+- **Minor/major release:** bump the version yourself in the PR. CI detects the
+  manual bump (no `extension-v<version>` tag exists yet) and publishes that
+  version as-is instead of auto-bumping.
+- **Don't ship yet:** put `[skip release]` in the merge commit message — CI
+  neither bumps nor publishes.
+- Merges that don't touch `apps/extension/` (docs, landing page) never trigger
+  a release.
 
 Chrome requires every uploaded version to be **strictly greater** than the
-currently published one — so always go up, never reuse a number.
+currently published one — the auto-bump guarantees that.
 
 ---
 
@@ -138,29 +146,27 @@ review (a few hours to a few business days).
 
 ## Releasing a new version (the normal flow)
 
-```bash
-# 1. Bump the version
-#    apps/extension/package.json  →  "version": "0.1.1"
+Merge your extension change to `main`. That's it — the **Release extension**
+workflow auto-bumps the patch version, commits the bump back to `main`, builds,
+publishes, and tags `extension-v<version>`.
 
-# 2. (optional) refresh the landing-page download zip if you ship it there
-pnpm package:extension   # rebuilds + copies the zip into the landing page
-
-# 3. Commit, open a PR, merge to main
-```
-
-On merge, the **Release extension** workflow runs:
-
-- New version → builds, `wxt submit`, tags `extension-v0.1.1`. ✅ Published.
-- Same version as last release → skipped (the tag already exists). ⏭️
+- Want a **minor/major** version instead? Bump it yourself in the PR — CI
+  publishes your number without bumping again.
+- Extension change that **shouldn't ship yet**? Add `[skip release]` to the
+  merge commit message.
 
 Watch progress under the repo's **Actions** tab. After CI succeeds, the new
 version still goes through Chrome's review queue before it's live to users.
 
+The bump commit is pushed **before** publishing on purpose: if the store upload
+fails, the bumped version has no release tag, so the next extension merge
+publishes that same number instead of skipping past it.
+
 ### Versioning
 
-Use plain semver in `apps/extension/package.json`. Chrome only requires that the
-number always increases. Patch for fixes, minor for features, major for big
-changes — your call.
+Use plain semver in `apps/extension/package.json`. Chrome only requires that
+the number always increases. CI handles patch bumps; bump minor for features
+and major for big changes yourself in the PR.
 
 ---
 
@@ -189,5 +195,8 @@ pnpm dlx publish-browser-extension@4 --chrome-zip "$(ls .output/*-chrome.zip | h
   `pnpm dlx publish-browser-extension@4 init` and confirm you're a test user.
 - **"Version number is the same / lower"** — bump `version` in
   `apps/extension/package.json`; you can't republish an existing number.
-- **Workflow ran but skipped publishing** — that means the `extension-v<version>`
-  tag already exists, i.e. the version wasn't bumped. That's the intended guard.
+- **Workflow ran but skipped publishing** — either the Chrome secrets aren't
+  configured yet, or the merge commit message contained `[skip ci]` /
+  `[skip release]`. Check the run's notices under the Actions tab.
+- **Workflow didn't run at all** — the merge didn't touch `apps/extension/`
+  (the workflow is path-filtered), which is the intended behavior.
