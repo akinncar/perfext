@@ -54,7 +54,8 @@ Ports: landing page **3000**, extension dev server **3001** (set in
   that opens the full settings page. Saves via `lib/settings.ts`.
 - **Options (full page):** `apps/extension/entrypoints/options/` — opened in a
   tab from the popup gear; sidebar menu: AI source, Account (sign out), Plans
-  (TODO). Shares the view components in `lib/views/` with the popup/welcome.
+  (billing/usage). Shares the view components in `lib/views/` with the
+  popup/welcome.
 - **Shared views:** `apps/extension/lib/views/` — `SourceSettings` (BYOK vs
   hosted toggle), `ByokFields`, `AuthView` (single-page login/signup),
   `AccountPanel`, `PlansView`. `lib/useSettings.ts` loads + persists settings.
@@ -73,8 +74,9 @@ Ports: landing page **3000**, extension dev server **3001** (set in
 - **Types:** `apps/extension/lib/types.ts` (settings, auth/session, mode,
   issues, messaging).
 
-Scope note: highlighting supports `<textarea>` and text `<input>`;
-`contenteditable` editors are not handled yet.
+Scope note: highlighting supports `<textarea>`, text `<input>`, and
+`contenteditable` rich editors (activated on focus; see
+`lib/text-surface/content-editable-source.ts`).
 
 ## Conventions
 

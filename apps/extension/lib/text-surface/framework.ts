@@ -1,6 +1,6 @@
 /**
  * Detect which rich-text framework owns an editable, by its well-known DOM
- * signature. This is the key the QuirksRegistry (Phase 3) uses to look up
+ * signature. This is the key the QuirksRegistry uses to look up
  * per-framework overrides; the generic engine works without it.
  *
  * Pure and DOM-structural, so it is unit testable without a browser.

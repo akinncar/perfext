@@ -20,33 +20,6 @@ body {
   margin-bottom: 16px;
 }
 
-.callout {
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.callout p {
-  margin: 0 0 10px;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.callout-action {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #000;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-}
-
 .plan-notice {
   display: flex;
   align-items: center;
