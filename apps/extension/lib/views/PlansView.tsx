@@ -6,6 +6,7 @@ import {
   getAccount,
   getPlans,
 } from "../api-client";
+import { withValidSession } from "../auth-session";
 import { Account, Plan, Session } from "../types";
 import "../settings-form.css";
 
@@ -55,7 +56,7 @@ export function PlansView({
       return;
     }
     let cancelled = false;
-    getAccount(accessToken)
+    withValidSession(getAccount)
       .then((a) => {
         if (!cancelled) setAccount(a);
       })
@@ -77,7 +78,9 @@ export function PlansView({
     setBusy(plan.id);
     setError("");
     try {
-      const url = await createCheckout(accessToken, plan.id, interval);
+      const url = await withValidSession((token) =>
+        createCheckout(token, plan.id, interval),
+      );
       chrome.tabs.create({ url });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Checkout failed. Try again.");
@@ -91,7 +94,7 @@ export function PlansView({
     setBusy("manage");
     setError("");
     try {
-      const url = await createPortal(accessToken);
+      const url = await withValidSession(createPortal);
       chrome.tabs.create({ url });
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Couldn't open billing. Try again.");

@@ -1,6 +1,7 @@
-import { analyze, ApiClientError, refresh } from "@/lib/api-client";
+import { analyze, ApiClientError } from "@/lib/api-client";
+import { withValidSession } from "@/lib/auth-session";
 import { clearPlanNotice, savePlanNotice } from "@/lib/plan-notice";
-import { loadSettings, saveSettings } from "@/lib/settings";
+import { loadSettings } from "@/lib/settings";
 import { AnalyzeRequest, AnalyzeResponse, isHosted, Issue, Settings } from "@/lib/types";
 
 export default defineBackground(() => {
@@ -51,23 +52,13 @@ export default defineBackground(() => {
 });
 
 /**
- * Run analysis. For Server AI, transparently refresh the session and retry once
- * if the access token has expired (401), persisting the new session.
+ * Run analysis. For Server AI, `withValidSession` renews the session before
+ * expiry (and retries once on a 401), so users stay logged in as long as
+ * their refresh token is valid.
  */
 async function runAnalyze(settings: Settings, text: string): Promise<Issue[]> {
   if (!isHosted(settings)) {
     return analyze(settings, text);
   }
-
-  const session = settings.session;
-  try {
-    return await analyze(settings, text, session?.accessToken);
-  } catch (err) {
-    const expired = err instanceof ApiClientError && err.status === 401;
-    if (!expired || !session?.refreshToken) throw err;
-
-    const next = await refresh(session.refreshToken);
-    await saveSettings({ ...settings, session: next });
-    return analyze(settings, text, next.accessToken);
-  }
+  return withValidSession((accessToken) => analyze(settings, text, accessToken));
 }

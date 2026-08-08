@@ -6,6 +6,8 @@ export type Severity = "red" | "yellow";
 export interface Session {
   accessToken: string;
   refreshToken: string;
+  /** Unix time (seconds) when `accessToken` expires; used to renew early. */
+  expiresAt?: number;
   user: { id: string; email: string | null } | null;
 }
 

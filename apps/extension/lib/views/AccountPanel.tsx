@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiClientError, getMe, updateDisplayName } from "../api-client";
+import { withValidSession } from "../auth-session";
 import { Session } from "../types";
 import "../settings-form.css";
 
@@ -16,7 +17,7 @@ export function AccountPanel({ session, onSignOut }: AccountPanelProps) {
 
   useEffect(() => {
     let cancelled = false;
-    getMe(session.accessToken)
+    withValidSession(getMe)
       .then((me) => {
         if (!cancelled) setDisplayName(me.displayName ?? "");
       })
@@ -32,7 +33,9 @@ export function AccountPanel({ session, onSignOut }: AccountPanelProps) {
     setSaving(true);
     setStatus("");
     try {
-      const me = await updateDisplayName(session.accessToken, displayName);
+      const me = await withValidSession((token) =>
+        updateDisplayName(token, displayName),
+      );
       setDisplayName(me.displayName ?? "");
       setStatus("Saved");
       setTimeout(() => setStatus(""), 1500);
