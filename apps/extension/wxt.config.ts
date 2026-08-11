@@ -17,7 +17,7 @@ export default defineConfig({
     startUrls: ["http://localhost:3000/playground"],
   },
   manifest: {
-    name: "Perfext — make perfect texts",
+    name: "Perfext - make perfect texts",
     description:
       "AI-powered writing suggestions as you type, with Perfext AI or your own key.",
     permissions: ["storage", "activeTab"],
