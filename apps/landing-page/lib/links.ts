@@ -1,7 +1,6 @@
 // Distribution links for the extension.
-// Replace CHROME_STORE_URL once the extension is published to the Chrome Web Store.
 export const CHROME_STORE_URL =
-  "https://chrome.google.com/webstore/detail/perfext";
+  "https://chromewebstore.google.com/detail/perfext-%E2%80%94-make-perfect-te/okhmdfmgnidkhjobgfjjfckhbeobbodp";
 
 // The packed extension is served straight from public/. Regenerate it with
 // `pnpm package:extension` from the repo root.

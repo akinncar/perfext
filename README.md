@@ -4,6 +4,8 @@ Perfext is a browser extension that uses AI to improve your writing skills,
 suggesting improvements as you type, powered by **your own** AI model and API
 key, plus a landing page to install it.
 
+**[➜ Install Perfext from the Chrome Web Store](https://chromewebstore.google.com/detail/perfext-%E2%80%94-make-perfect-te/okhmdfmgnidkhjobgfjjfckhbeobbodp)**
+
 ![Perfext highlighting a misspelling and an awkward phrase, with an Accept/Dismiss suggestion popover](docs/demo.png)
 
 - **Red** highlight — likely wrong (typos, grammar, doesn't read well).
