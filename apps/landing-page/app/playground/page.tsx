@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import { socialMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Perfext — Playground",
+  title: "Playground — Try the AI Writing Suggestions",
   description:
-    "A scratch page with text fields to try Perfext's writing suggestions.",
+    "A live scratch page for trying Perfext, the Grammarly alternative for Chrome. Type in a textarea, a text input or a rich contenteditable editor and watch the inline AI suggestions appear.",
+  alternates: { canonical: "/playground" },
+  ...socialMetadata({
+    title: "Perfext Playground — Try the AI Writing Suggestions",
+    description:
+      "Type in real text fields and watch Perfext's inline AI writing suggestions appear.",
+    path: "/playground",
+  }),
 };
 
 // Sample text seeded with typos and awkward phrasing so the extension has
@@ -16,9 +25,11 @@ export default function Playground() {
     <main className="min-h-screen grid-backdrop">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <img
+          <Image
             src="/icon.png"
-            alt="Perfext"
+            alt="Perfext logo"
+            width={20}
+            height={20}
             className="h-5 w-5 rounded-md ring-1 ring-white/80"
           />
           Perfext Playground

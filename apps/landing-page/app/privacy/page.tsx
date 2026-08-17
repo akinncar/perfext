@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { socialMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Perfext",
+  title: "Privacy Policy",
   description:
-    "How Perfext handles the text you type, your API keys, and your account data.",
+    "How Perfext handles the text you type, your API keys, and your account data — no browsing history, no page tracking, and no training AI models on your writing.",
+  alternates: { canonical: "/privacy" },
+  ...socialMetadata({
+    title: "Privacy Policy — Perfext",
+    description:
+      "How Perfext handles the text you type, your API keys, and your account data.",
+    path: "/privacy",
+  }),
 };
 
 // Bump this whenever the policy content materially changes.
@@ -185,9 +194,11 @@ export default function PrivacyPage() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
-          <img
+          <Image
             src="/icon.png"
-            alt="Perfext"
+            alt="Perfext logo"
+            width={20}
+            height={20}
             className="h-5 w-5 rounded-md ring-1 ring-white/80"
           />
           Perfext

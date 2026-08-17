@@ -1,6 +1,82 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { CHROME_STORE_URL, LATEST_RELEASE_URL } from "@/lib/links";
 import { ChromeIcon, DownloadIcon } from "@/components/Icons";
 import { Pricing } from "@/components/Pricing";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  FAQ,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  socialMetadata,
+} from "@/lib/seo";
+
+const HOME_TITLE = "Perfext — Free Grammarly Alternative for Chrome";
+
+export const metadata: Metadata = {
+  title: { absolute: HOME_TITLE },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  ...socialMetadata({ title: HOME_TITLE, path: "/" }),
+};
+
+/** Rich-result eligible: the product itself, plus the answers below it. */
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": `${SITE_URL}/#software`,
+  name: SITE_NAME,
+  alternateName: "Perfext — Grammarly alternative",
+  applicationCategory: "BrowserApplication",
+  applicationSubCategory: "Writing assistant",
+  operatingSystem: "Chrome, Edge, Brave, Arc, Opera",
+  browserRequirements: "Requires a Chromium-based browser with Manifest V3 support",
+  url: SITE_URL,
+  downloadUrl: `${SITE_URL}/perfext-extension.zip`,
+  installUrl: CHROME_STORE_URL,
+  softwareVersion: "1",
+  description: SITE_DESCRIPTION,
+  image: `${SITE_URL}/icon.png`,
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  featureList: [
+    "Inline AI grammar and spelling suggestions in any text field",
+    "Color-coded issues: red for mistakes, yellow for weaker phrasing",
+    "Accept or dismiss each suggestion without leaving the page",
+    "Bring your own OpenAI or Anthropic API key, encrypted and never stored",
+    "Hosted Perfext AI option with no key management",
+    "Works in textareas, text inputs and contenteditable rich editors",
+    "No browsing history collected and no page tracking",
+  ],
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free — bring your own API key",
+      price: "0",
+      priceCurrency: "USD",
+      category: "free",
+    },
+    {
+      "@type": "Offer",
+      name: "Pro — Perfext AI included",
+      priceCurrency: "USD",
+      category: "subscription",
+      url: `${SITE_URL}/#pricing`,
+    },
+  ],
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": `${SITE_URL}/#faq`,
+  mainEntity: FAQ.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+};
 
 const steps = [
   {
@@ -28,29 +104,37 @@ const features = [
   },
   {
     title: "Perfext AI, or your own key",
-    body: "Sign in to use Perfext's own AI, or bring your own OpenAI or Anthropic key — sent encrypted and never stored.",
+    body: "Sign in to use Perfext's own AI, or bring your own OpenAI or Anthropic key — sent encrypted and never stored. That makes Perfext a Grammarly alternative you can run for the cost of your own API usage.",
   },
 ];
 
 export default function Home() {
   return (
     <main className="min-h-screen grid-backdrop">
+      <JsonLd data={softwareSchema} />
+      <JsonLd data={faqSchema} />
+
       {/* Nav */}
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <img
+          <Image
             src="/icon.png"
-            alt="Perfext"
+            alt="Perfext logo"
+            width={20}
+            height={20}
+            priority
             className="h-5 w-5 rounded-md ring-1 ring-white/80"
           />
           Perfext
         </div>
-        <a
-          href="#download"
-          className="rounded-md border border-border px-4 py-1.5 text-sm text-muted transition hover:text-white"
-        >
-          Download
-        </a>
+        <nav aria-label="Primary">
+          <a
+            href="#download"
+            className="rounded-md border border-border px-4 py-1.5 text-sm text-muted transition hover:text-white"
+          >
+            Download
+          </a>
+        </nav>
       </header>
 
       {/* Hero */}
@@ -63,7 +147,7 @@ export default function Home() {
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-balance text-lg text-muted">
           A browser extension that improves your writing as you type.<br />
-          Your only AI writing assistant.
+          The Grammarly alternative powered by the AI model you choose.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -157,6 +241,26 @@ export default function Home() {
 
       <Pricing />
 
+      {/* FAQ — the same answers feed the FAQPage JSON-LD and /llms.txt, so
+          search engines and AI answer engines quote the wording we chose. */}
+      <section id="faq" className="mx-auto max-w-3xl px-6 pb-24">
+        <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight">
+          Frequently asked questions
+        </h2>
+        <div className="flex flex-col divide-y divide-border">
+          {FAQ.map((item) => (
+            <details key={item.question} className="group py-6 first:pt-0">
+              <summary className="cursor-pointer list-none text-lg font-medium text-white transition hover:text-neutral-300">
+                {item.question}
+              </summary>
+              <p className="mt-3 text-base leading-7 text-muted">
+                {item.answer}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* Download CTA */}
       <section
         id="download"
@@ -191,11 +295,27 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-8 text-sm text-muted">
-          <span>© {new Date().getFullYear()} Perfext · Make Perfect Texts</span>
-          <a href="/privacy" className="transition hover:text-white">
-            Privacy
-          </a>
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted sm:flex-row">
+          <span>
+            © {new Date().getFullYear()} Perfext · The AI writing assistant and
+            Grammarly alternative for Chrome
+          </span>
+          {/* Internal links so crawlers reach every indexable route from the
+              home page. */}
+          <nav aria-label="Footer" className="flex items-center gap-5">
+            <a href="#pricing" className="transition hover:text-white">
+              Pricing
+            </a>
+            <a href="#faq" className="transition hover:text-white">
+              FAQ
+            </a>
+            <Link href="/playground" className="transition hover:text-white">
+              Playground
+            </Link>
+            <Link href="/privacy" className="transition hover:text-white">
+              Privacy
+            </Link>
+          </nav>
         </div>
       </footer>
     </main>
