@@ -104,6 +104,28 @@ The landing page's "Download latest" button serves
 - After changing the extension: run `pnpm package:extension`, then commit the
   refreshed `perfext-extension.zip`, then push so prod redeploys.
 
+## SEO (landing page)
+
+`apps/landing-page/lib/seo.ts` is the single source of truth — site URL, title,
+description, keywords and the FAQ. The metadata routes (`app/robots.ts`,
+`app/sitemap.ts`, `app/manifest.ts`, `app/llms.txt/route.ts`), the generated OG
+card (`app/opengraph-image.tsx`) and the JSON-LD all read from it, so edit copy
+there rather than in a page.
+
+Two gotchas:
+
+- **Next replaces `openGraph`/`twitter` wholesale** when a page defines its own
+  — it does not deep-merge, so a page that sets only a title silently loses
+  `og:type`, `og:site_name` and `twitter:card`. Always build page social tags
+  with `socialMetadata()` from `lib/seo.ts`.
+- **Don't put `runtime = "edge"` on `opengraph-image.tsx`.** It opts the route
+  out of static generation; the default runtime prerenders the PNG at build
+  time.
+
+The primary keyword is **"grammarly alternative"**. `/llms.txt` and the FAQ
+(both on-page and as `FAQPage` JSON-LD) exist to be quoted by AI answer engines
+— `app/robots.ts` allows their crawlers by name.
+
 ## Verifying
 
 There's no browser automation here. Before claiming done:
